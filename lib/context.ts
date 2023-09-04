@@ -12,6 +12,7 @@ export interface VmContext {
     props?: any;
     on?: any;
   };
+  providers: { [name: string]: any };
   on: (name: string, handler: (data: any) => void) => VmContext;
   $mount: () => void;
   $destroy: () => void;
@@ -32,6 +33,7 @@ export function createContext<T>(init: (context: Partial<VmContext>) => T): T {
         mount: [],
         destroy: [],
       },
+      providers: {},
       parent: currentContext,
       $destroy() {
         // TODO: find a better way
@@ -83,4 +85,20 @@ export function contextManager() {
 
 export function getCurrentContext() {
   return currentContext!;
+}
+
+export function inject<T = any>(key: string): T | null {
+  for (
+    let ctx: VmContext | undefined = getCurrentContext();
+    ctx;
+    ctx = ctx.parent
+  ) {
+    if (key in ctx.providers) return ctx.providers[key] as T;
+  }
+  return null;
+}
+
+export function provide<T = any>(key: string, value: T): T {
+  const ctx = getCurrentContext();
+  return (ctx.providers[key] = value);
 }
