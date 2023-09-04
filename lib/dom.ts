@@ -27,20 +27,44 @@ export function forBlock() {
   // TODO: for block
 }
 
-export function awaitBlock<T>(
-  $: Reactive<Promise<T>> | Promise<T>,
-  pendingBlock: () => NNode,
-  thenBlock: (value: T) => NNode,
-  catchBlock: (err: Error) => NNode
-) {
+export function switchBlock<T>($: Reactive<T> | T) {
   const { wrap } = contextManager();
+  let defaultFn: ((value: T) => NNode) | undefined;
+  const cases = new Map<T, (value: T) => NNode>();
+
+  const reactiveTemplate = reactive<NNode>((push) => {
+    return of($).subscribe(
+      wrap((value) => {
+        const template = cases.get(value) || defaultFn;
+        if (template) return push(template(value));
+        return push(document.createComment("switch case error"));
+      })
+    );
+  });
+
+  return {
+    ...reactiveTemplate,
+    case(caseValue: T, fn: (value: T) => NNode) {
+      cases.set(caseValue, fn);
+      return this;
+    },
+    default(fn: (value: T) => NNode) {
+      defaultFn = fn;
+      return this;
+    },
+  };
+}
+
+export function awaitBlock<T>($: Reactive<Promise<T>> | Promise<T>) {
+  const { wrap } = contextManager();
+  const noop = () => document.createComment("text");
   const templates = {
-    pending: wrap(pendingBlock),
-    then: wrap(thenBlock),
-    catch: wrap(catchBlock),
+    pending: noop as () => NNode,
+    then: noop as (value: T) => NNode,
+    catch: noop as (err: Error) => NNode,
   };
   // TODO: handle the context destroy and creation
-  return reactive<NNode>((push) => {
+  const template = reactive<NNode>((push) => {
     let isPending = false;
     let current: Promise<T> | null = null;
     return of($).subscribe((promise) => {
@@ -63,6 +87,22 @@ export function awaitBlock<T>(
       );
     });
   });
+
+  return {
+    ...template,
+    then(fn: (value: T) => NNode) {
+      templates.then = wrap(fn);
+      return this;
+    },
+    catch(fn: (err: Error) => NNode) {
+      templates.catch = wrap(fn);
+      return this;
+    },
+    pending(fn: () => NNode) {
+      templates.pending = wrap(fn);
+      return this;
+    },
+  };
 }
 
 function react<T>(readable: Reactive<T> | T, render: (value: T) => void) {
