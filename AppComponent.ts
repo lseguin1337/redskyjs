@@ -45,9 +45,3 @@ export const AppComponent = createComponent({
     );
   },
 });
-
-// bootstrap the app
-AppComponent(
-  {}, // empty props
-  { target: document.body } // target destination
-);

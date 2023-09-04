@@ -1,4 +1,4 @@
-import { AppComponent } from "./App";
+import { AppComponent } from "./AppComponent";
 
 AppComponent(
   {}, // empty props
