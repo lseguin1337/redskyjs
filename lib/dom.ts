@@ -1,7 +1,7 @@
 import { NNode } from "./component";
 import { chainContext, getCurrentContext } from "./context";
 import { onDestroy } from "./hook";
-import { Reactive, Writable, derived, of } from "./reactive";
+import { Reactive, Writable, derived, of, reactive } from "./reactive";
 
 export function toNode(value: NNode) {
   if (typeof value === "string") return document.createTextNode(value);
@@ -24,6 +24,35 @@ export function ifBlock(
 
 export function forBlock() {
   // TODO:
+}
+
+export function awaitBlock<T>(
+  $: Reactive<Promise<T>> | Promise<T>,
+  pendingBlock: () => NNode,
+  thenBlock: (value: T) => NNode,
+  catchBlock: (err: Error) => NNode
+) {
+  // TODO: handle the context destroy and creation
+  return reactive<NNode>((push) => {
+    let isPending = true;
+    let current: Promise<T> | null = null;
+    push(pendingBlock());
+    return of($).subscribe((promise) => {
+      if (!isPending) {
+        isPending = true;
+        push(pendingBlock());
+      }
+      current = promise;
+      promise.then(
+        (value) => {
+          if (current === promise) push(thenBlock(value));
+        },
+        (err) => {
+          if (current === promise) push(catchBlock(err));
+        }
+      );
+    });
+  });
 }
 
 function react<T>(readable: Reactive<T> | T, render: (value: T) => void) {

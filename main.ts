@@ -1,10 +1,8 @@
-import { CalcComponent } from "./CalcComponent";
+import { AppComponent } from "./App";
 
-const calcComponent = CalcComponent(
+AppComponent(
   {}, // empty props
   {
     target: document.body, // component injection
   }
 );
-
-console.log("calc", calcComponent);

@@ -90,7 +90,7 @@ export function createComponent(options: ComponentOptions) {
       if (opts.target) {
         opts.target.append(ctx.el!);
       }
-      return ctx;
+      return ctx as VmContext;
     });
   };
 }

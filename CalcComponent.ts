@@ -4,8 +4,8 @@ import { derived, writable } from "./lib/reactive";
 
 export const CalcComponent = createComponent({
   style: [
-    "main { display: flex; padding: 5px; }",
-    "main.isNaN { background-color: red; }",
+    "div { display: flex; padding: 5px; }",
+    "div.isNaN { background-color: red; }",
     "input, button { margin-right: 5px; margin-left: 5px; }",
   ],
   setup() {
@@ -18,7 +18,7 @@ export const CalcComponent = createComponent({
       right.value = "0";
     };
 
-    return el("main").class({
+    return el("div").class({
       isNaN: derived(result, isNaN),
     })(
       el("input").bind(left).attr({ name: "left-input" }),

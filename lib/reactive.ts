@@ -35,8 +35,9 @@ export function reactive<T>(init: InitHook<T>): Reactive<T> {
   };
 }
 
-export function of<T = any>(source: any): Reactive<T> {
-  if (typeof source === "object" && "subscribe" in source) return source;
+export function of<T = any>(source: Reactive<T> | T): Reactive<T> {
+  if (typeof source === "object" && source && "subscribe" in source)
+    return source;
   return reactive<T>((push) => {
     push(source);
   });
