@@ -41,21 +41,24 @@ export function awaitBlock<T>(
   };
   // TODO: handle the context destroy and creation
   return reactive<NNode>((push) => {
-    let isPending = true;
+    let isPending = false;
     let current: Promise<T> | null = null;
-    push(templates.pending());
     return of($).subscribe((promise) => {
+      current = promise;
       if (!isPending) {
         isPending = true;
         push(templates.pending());
       }
-      current = promise;
       promise.then(
         (value) => {
-          if (current === promise) push(templates.then(value));
+          if (current !== promise) return;
+          isPending = false;
+          push(templates.then(value));
         },
         (err) => {
-          if (current === promise) push(templates.catch(err));
+          if (current !== promise) return;
+          isPending = false;
+          push(templates.catch(err));
         }
       );
     });
