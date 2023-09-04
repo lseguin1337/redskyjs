@@ -11,7 +11,7 @@ export function toNode(value: NNode) {
 export function ifBlock(
   condition: Reactive<boolean>,
   block: () => NNode,
-  elseBlock: () => NNode = () => document.createComment("if block")
+  elseBlock: () => NNode = () => comment("if block")
 ) {
   const { wrap } = contextManager();
   return derived(
@@ -37,7 +37,7 @@ export function switchBlock<T>($: Reactive<T> | T) {
       wrap((value) => {
         const template = cases.get(value) || defaultFn;
         if (template) return push(template(value));
-        return push(document.createComment("switch case error"));
+        return push(comment("switch case missing"));
       })
     );
   });
@@ -57,7 +57,7 @@ export function switchBlock<T>($: Reactive<T> | T) {
 
 export function awaitBlock<T>($: Reactive<Promise<T>> | Promise<T>) {
   const { wrap } = contextManager();
-  const noop = () => document.createComment("text");
+  const noop = () => comment("text");
   const templates = {
     pending: noop as () => NNode,
     then: noop as (value: T) => NNode,
@@ -194,4 +194,8 @@ export function text(text: Reactive<string | number> | string | number) {
     textNode.data = `${value}`;
   });
   return textNode;
+}
+
+export function comment(data: string) {
+  return document.createComment(data);
 }
