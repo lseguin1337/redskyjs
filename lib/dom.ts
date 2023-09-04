@@ -1,5 +1,5 @@
 import { NNode } from "./component";
-import { chainContext, getCurrentContext } from "./context";
+import { contextManager, getCurrentContext } from "./context";
 import { onDestroy } from "./hook";
 import { Reactive, Writable, derived, of, reactive } from "./reactive";
 
@@ -13,9 +13,10 @@ export function ifBlock(
   block: () => NNode,
   elseBlock: () => NNode = () => document.createComment("if block")
 ) {
+  const { wrap } = contextManager();
   return derived(
     condition,
-    chainContext((isActive) => {
+    wrap((isActive) => {
       if (isActive) return block();
       return elseBlock();
     })
@@ -32,23 +33,29 @@ export function awaitBlock<T>(
   thenBlock: (value: T) => NNode,
   catchBlock: (err: Error) => NNode
 ) {
+  const { wrap } = contextManager();
+  const templates = {
+    pending: wrap(pendingBlock),
+    then: wrap(thenBlock),
+    catch: wrap(catchBlock),
+  };
   // TODO: handle the context destroy and creation
   return reactive<NNode>((push) => {
     let isPending = true;
     let current: Promise<T> | null = null;
-    push(pendingBlock());
+    push(templates.pending());
     return of($).subscribe((promise) => {
       if (!isPending) {
         isPending = true;
-        push(pendingBlock());
+        push(templates.pending());
       }
       current = promise;
       promise.then(
         (value) => {
-          if (current === promise) push(thenBlock(value));
+          if (current === promise) push(templates.then(value));
         },
         (err) => {
-          if (current === promise) push(catchBlock(err));
+          if (current === promise) push(templates.catch(err));
         }
       );
     });

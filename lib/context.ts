@@ -53,22 +53,32 @@ export function createContext<T>(init: (context: Partial<VmContext>) => T): T {
   }
 }
 
-export function chainContext<T extends (...args: any[]) => any>(fn: T): T {
-  const oldCtx = currentContext;
-  let prevCtx: VmContext;
-  return ((...args) => {
-    let tmp = currentContext;
+export function contextManager() {
+  const oldCtx = getCurrentContext();
+  let prevCtx: Partial<VmContext> | null = null;
+
+  function wrap<T extends (...args: any[]) => any>(fn: T): T {
+    return ((...args) => create(() => fn(...args))) as T;
+  }
+
+  function create<T>(fn: (newCtx: Partial<VmContext>) => T) {
+    const tmp = currentContext;
     try {
       currentContext = oldCtx;
-      prevCtx?.$destroy();
       return createContext((newCtx) => {
-        prevCtx = newCtx as any;
-        return fn(...args);
+        prevCtx?.$destroy?.();
+        prevCtx = newCtx;
+        return fn(newCtx);
       });
     } finally {
       currentContext = tmp;
     }
-  }) as T;
+  }
+
+  return {
+    wrap,
+    create,
+  };
 }
 
 export function getCurrentContext() {
