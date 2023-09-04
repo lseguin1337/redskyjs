@@ -5,6 +5,6 @@ import { el } from "./lib/dom";
 export const AppComponent = createComponent({
   style: [],
   setup() {
-    return el("main")(el("h1")("Hello Calc"), CalcComponent());
+    return el("main")(el("h1")("Hello Calc 2"), CalcComponent());
   },
 });
