@@ -23,9 +23,7 @@ export function ifBlock(
   );
 }
 
-export function forBlock() {
-  // TODO:
-}
+export function forBlock() {}
 
 export function awaitBlock<T>(
   $: Reactive<Promise<T>> | Promise<T>,
