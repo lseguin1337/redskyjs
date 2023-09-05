@@ -30,5 +30,10 @@
   "bugs": {
     "url": "https://github.com/lseguin1337/redskyjs/issues"
   },
-  "homepage": "https://github.com/lseguin1337/redskyjs#readme"
+  "homepage": "https://github.com/lseguin1337/redskyjs#readme",
+  "dependencies": {
+    "@types/prop-types": "*",
+    "@types/scheduler": "*",
+    "csstype": "^3.0.2"
+  }
 }

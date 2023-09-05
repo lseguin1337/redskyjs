@@ -1,7 +1,10 @@
+/// <reference path="../typings/index.d.ts" />
+
+import { ReactElement } from "../typings/index";
 import { VmContext, createContext, getCurrentContext } from "./context";
 import { el, toNode } from "./dom";
 
-export type NNode = Node | string | VmContext;
+export type NNode = Node | string | VmContext | ReactElement;
 
 export interface ComponentOptions {
   styleScopeId?: string;

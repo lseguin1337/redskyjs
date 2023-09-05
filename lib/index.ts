@@ -1,3 +1,5 @@
+/// <reference path="../typings/index.d.ts" />
+
 export * from "./reactive";
 export * from "./hook";
 export * from "./dom";

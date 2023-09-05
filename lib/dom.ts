@@ -20,9 +20,12 @@ type OneOrMany<T> = T[] | T;
 type FactoryOrNot<T> = (() => T) | T;
 type ElChild = FactoryOrNot<ReactiveOrNot<OneOrMany<NNode>>>;
 
-export function toNode(value: NNode) {
-  if (typeof value === "string") return document.createTextNode(value);
-  return "el" in value ? value.el : value;
+export function toNode(value: NNode): Node {
+  if (typeof value === "object") {
+    if ("el" in value) return value.el;
+    if ("nodeType" in value) return value;
+  }
+  return document.createTextNode(`${value}`);
 }
 
 export function ifBlock(
@@ -362,4 +365,25 @@ function replaceWith(oldValue: Node[], newValue: Node[]) {
       oldNodes.delete(tmp);
     }
   }
+}
+
+export function h(
+  localName: string,
+  attrs: { [name: string]: any },
+  ...children: NNode[]
+) {
+  const element = el(localName);
+
+  for (const name in attrs) {
+    const value = attrs[name];
+    if (name === "bind") {
+      element.bind(value);
+      continue;
+    }
+    const isListener = /^on/.test(name) && typeof value === "function";
+    if (isListener) element.on(name.replace(/^on/, "").toLowerCase(), value);
+    else element.attr({ [name]: value });
+  }
+
+  return element(...children);
 }
