@@ -1317,7 +1317,7 @@ declare namespace RedSky {
   type ReactiveProps<T> = {
     [P in keyof T]: T[P] extends Function
       ? T[P]
-      : T[P] extends Reactive<any>
+      : T[P] extends DoNotReactive<any>
       ? T[P]
       : ReactiveOrNot<T[P]>;
   };
@@ -1875,9 +1875,13 @@ declare namespace RedSky {
     | "treeitem"
     | (string & {});
 
+  type DoNotReactive<T> = T;
+
   interface HTMLAttributes<T> extends AriaAttributes, DOMAttributes<T> {
-    bind?: Writable<string>;
-    class?: { [className: string]: ReactiveOrNot<boolean> };
+    bind?: DoNotReactive<Writable<string>>;
+    class?: DoNotReactive<{ [className: string]: ReactiveOrNot<boolean> }>;
+    use?: (node: Element) => void;
+
     // React-specific Attributes
     defaultChecked?: boolean | undefined;
     defaultValue?: string | number | ReadonlyArray<string> | undefined;

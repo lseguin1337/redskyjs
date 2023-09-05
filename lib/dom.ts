@@ -382,6 +382,9 @@ export function h(
     } else if (name === "class") {
       element.class(value);
       continue;
+    } else if (name === "use" && typeof value === "function") {
+      element.plug(value);
+      continue;
     }
     const isListener = /^on/.test(name) && typeof value === "function";
     if (isListener) element.on(name.replace(/^on/, "").toLowerCase(), value);
