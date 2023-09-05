@@ -20,7 +20,7 @@ export const CalcComponent = createComponent({
     const left = writable("0");
     const right = writable("0");
     const result = derived([left, right], ([a, b]) => +a + +b);
-    const isGreaterTo10 = derived(result, (value) => value > 10);
+    const isGreaterThan10 = derived(result, (value) => value > 10);
 
     const reset = () => {
       left.value = "0";
@@ -34,7 +34,7 @@ export const CalcComponent = createComponent({
         <input bind={right}></input>
         = {result}
         <button onClick={reset}>reset</button>
-        {ifBlock(isGreaterTo10, () => (<div>{ChildComponent({ myValue: result })}</div>))}
+        {ifBlock(isGreaterThan10, () => (<div>{ChildComponent({ myValue: result })}</div>))}
         <div>
           {switchBlock(result)
             .case(1, () => "woooow")
