@@ -10,12 +10,16 @@ export const AppComponent = createComponent({
       setTimeout(() => resolve("my result"), 1000)
     );
 
+    const letters = ["a", "b", "c", "d"];
+
     const isOpen = writable(true);
     const numbers = writable<number[]>([]);
+    const letter = writable<"a" | "b" | "c" | "d">("a");
 
     const action = () => {
       isOpen.value = !isOpen.value;
       numbers.value = numbers.value.concat([numbers.value.length + 1]);
+      letter.value = letters[numbers.value.length % letters.length] as any;
     };
 
     // component template
@@ -41,10 +45,11 @@ export const AppComponent = createComponent({
 
       // switch case block
       el("p")(
-        switchBlock(isOpen)
-          .case(true, () => "is true")
-          .case(false, () => "is false")
-          .default(() => "something else")
+        switchBlock(letter)
+          .case("a", () => "first letter of the alphabet")
+          .case("b", () => "first letter of hello in french")
+          .case("c", () => "third letter of the alphabet")
+          .default(() => "not implemented yet")
       ),
 
       el("div")(
