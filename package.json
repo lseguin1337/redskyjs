@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build:lib": "webpack -c webpack-lib.config.js",
     "build": "webpack",
     "dev": "webpack serve",
     "test": "echo \"Error: no test specified\" && exit 1"

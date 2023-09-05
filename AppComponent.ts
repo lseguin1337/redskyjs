@@ -1,7 +1,7 @@
 import { CalcComponent } from "./CalcComponent";
 import { createComponent } from "./lib/component";
 import { awaitBlock, ifBlock, el, switchBlock, forBlock } from "./lib/dom";
-import { writable } from "./lib/reactive";
+import { derived, writable } from "./lib/reactive";
 
 export const AppComponent = createComponent({
   style: ["main { margin: 0; padding: 0; }"],
@@ -22,9 +22,18 @@ export const AppComponent = createComponent({
       letter.value = letters[numbers.value.length % letters.length] as any;
     };
 
-    const clickOnAAA = () => {
-      alert("Click on AAA");
-    };
+    const selectedListInput = writable("1");
+    const selectedList = derived(selectedListInput, (v) => +v);
+
+    const list1 = [
+      el("div")("tutu 1"),
+      el("div")("tutu 2"),
+      el("div")("tutu 3"),
+    ];
+    const list2 = [list1[1], list1[0], list1[2]];
+    const list3 = [list1[0], list1[1]];
+    const list4 = [list1[2]];
+    const list5 = [...list1, el("div")("tutu 4")];
 
     // component template
     return el("main")(
@@ -47,18 +56,22 @@ export const AppComponent = createComponent({
           .catch((error) => `error: ${error.message}`)
       ),
 
+      el("input").attr({ type: "number" }).bind(selectedListInput),
+
       // switch case block
       el("div")(
-        switchBlock(letter)
-          .case("a", () => el("span").on("click", clickOnAAA)("aaa"))
-          .case("b", () => el("p")("bbb"))
-          .case("c", () => "ccc")
+        switchBlock(selectedList)
+          .case(1, () => list1 as any)
+          .case(2, () => list2 as any)
+          .case(3, () => list3 as any)
+          .case(4, () => list4 as any)
+          .case(5, () => list5 as any)
           .default(() => "not implemented yet")
       ),
 
       el("div")(
         // conditional block:
-        ifBlock(isOpen, () => "is open")
+        ifBlock(isOpen, () => "flag open")
       )
     );
   },

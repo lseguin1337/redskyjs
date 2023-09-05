@@ -291,7 +291,7 @@ function replaceNode(node: Node, newNode: Node) {
 }
 
 function insertBefore(node: Node, newNode: Node) {
-  node.parentNode!.insertBefore(node, newNode);
+  node.parentNode!.insertBefore(newNode, node);
 }
 
 function insertAfter(node: Node, newNode: Node) {
@@ -323,7 +323,7 @@ function iterator<T>(items: IterableIterator<T>) {
 }
 
 function replaceWith(oldValue: Node[], newValue: Node[]) {
-  // TODO: avoid moving all nodes
+  // TODO: improve this code
   const oldNodes = new Set(oldValue.concat().reverse());
   const newNodes = new Set(newValue.concat().reverse());
 
@@ -337,9 +337,9 @@ function replaceWith(oldValue: Node[], newValue: Node[]) {
       continue;
     } else if (oldNode.done) {
       insertBefore(newNode.prev!, newNode.value);
+      newNode.next();
       continue;
     } else if (oldNode.value === newNode.value) {
-      // no change
       oldNode.next();
       newNode.next();
       continue;
@@ -350,13 +350,16 @@ function replaceWith(oldValue: Node[], newValue: Node[]) {
       newNode.next();
     } else if (!newNodes.has(oldNode.value)) {
       replaceNode(oldNode.value, newNode.value);
-      oldNode.next();
-      newNode.next();
-    } else {
-      insertAfter(oldNode.value, newNode.value);
       oldNodes.delete(newNode.value);
       oldNode.next();
       newNode.next();
+    } else {
+      replaceNode(oldNode.value, newNode.value);
+      oldNodes.delete(newNode.value); // remove the new from the dataset
+      const tmp = oldNode.value;
+      oldNode.next();
+      newNode.next();
+      oldNodes.delete(tmp);
     }
   }
 }
