@@ -379,6 +379,9 @@ export function h(
     if (name === "bind") {
       element.bind(value);
       continue;
+    } else if (name === "class") {
+      element.class(value);
+      continue;
     }
     const isListener = /^on/.test(name) && typeof value === "function";
     if (isListener) element.on(name.replace(/^on/, "").toLowerCase(), value);
@@ -386,4 +389,10 @@ export function h(
   }
 
   return element(...children);
+}
+
+export function f(...children: NNode[]) {
+  const fragment = document.createDocumentFragment();
+  fragment.append(...children.map(toNode));
+  return fragment;
 }

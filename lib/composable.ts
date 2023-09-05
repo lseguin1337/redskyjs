@@ -8,9 +8,9 @@ export function useEventEmitter<T = any>(eventName: string) {
   };
 }
 
-export function useProp(propName: string) {
+export function useProp<T>(propName: string) {
   const ctx = getCurrentContext();
-  return reactive((push) => {
+  return reactive<T>((push) => {
     const value = ctx.params.props?.[propName];
     return of(value).subscribe(push);
   });

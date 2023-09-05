@@ -106,19 +106,19 @@ declare namespace RedSky {
   /**
    * Gets the instance type for a React element. The instance will be different for various component types:
    *
-   * - React class components will be the class instance. So if you had `class Foo extends React.Component<{}> {}`
-   *   and used `React.ElementRef<typeof Foo>` then the type would be the instance of `Foo`.
-   * - React stateless functional components do not have a backing instance and so `React.ElementRef<typeof Bar>`
+   * - React class components will be the class instance. So if you had `class Foo extends RedSky.Component<{}> {}`
+   *   and used `RedSky.ElementRef<typeof Foo>` then the type would be the instance of `Foo`.
+   * - React stateless functional components do not have a backing instance and so `RedSky.ElementRef<typeof Bar>`
    *   (when `Bar` is `function Bar() {}`) will give you the `undefined` type.
-   * - JSX intrinsics like `div` will give you their DOM instance. For `React.ElementRef<'div'>` that would be
-   *   `HTMLDivElement`. For `React.ElementRef<'input'>` that would be `HTMLInputElement`.
+   * - JSX intrinsics like `div` will give you their DOM instance. For `RedSky.ElementRef<'div'>` that would be
+   *   `HTMLDivElement`. For `RedSky.ElementRef<'input'>` that would be `HTMLInputElement`.
    * - React stateless functional components that forward a `ref` will give you the `ElementRef` of the forwarded
    *   to component.
    *
-   * `C` must be the type _of_ a React component so you need to use typeof as in `React.ElementRef<typeof MyComponent>`.
+   * `C` must be the type _of_ a React component so you need to use typeof as in `RedSky.ElementRef<typeof MyComponent>`.
    *
    * @todo In Flow, this works a little different with forwarded refs and the `AbstractComponent` that
-   *       `React.forwardRef()` returns.
+   *       `RedSky.forwardRef()` returns.
    */
   type ElementRef<
     C extends
@@ -288,11 +288,11 @@ declare namespace RedSky {
   }
 
   /**
-   * @deprecated - This type is not relevant when using React. Inline the type instead to make the intent clear.
+   * @deprecated - This type is not relevant when using RedSky. Inline the type instead to make the intent clear.
    */
   type ReactText = string | number;
   /**
-   * @deprecated - This type is not relevant when using React. Inline the type instead to make the intent clear.
+   * @deprecated - This type is not relevant when using RedSky. Inline the type instead to make the intent clear.
    */
   type ReactChild = ReactElement | string | number;
 
@@ -301,7 +301,7 @@ declare namespace RedSky {
    */
   interface ReactNodeArray extends ReadonlyArray<ReactNode> {}
   /**
-   * @deprecated - This type is not relevant when using React. Inline the type instead to make the intent clear.
+   * @deprecated - This type is not relevant when using RedSky. Inline the type instead to make the intent clear.
    */
   type ReactFragment = Iterable<ReactNode>;
 
@@ -313,6 +313,8 @@ declare namespace RedSky {
   interface DO_NOT_USE_OR_YOU_WILL_BE_FIRED_EXPERIMENTAL_REACT_NODES {}
   type ReactNode = ReactiveOrNot<
     | ReactElement
+    | { el: Node }
+    | Node
     | string
     | number
     | Iterable<ReactNode>
@@ -540,7 +542,7 @@ declare namespace RedSky {
   interface SuspenseProps {
     children?: ReactNode | undefined;
 
-    /** A fallback react tree to show when a Suspense child (like React.lazy) suspends */
+    /** A fallback react tree to show when a Suspense child (like RedSky.lazy) suspends */
     fallback?: ReactNode;
   }
 
@@ -585,11 +587,11 @@ declare namespace RedSky {
      *
      * ```ts
      * type MyContext = number
-     * const Ctx = React.createContext<MyContext>(0)
+     * const Ctx = RedSky.createContext<MyContext>(0)
      *
-     * class Foo extends React.Component {
+     * class Foo extends RedSky.Component {
      *   static contextType = Ctx
-     *   context!: React.ContextType<typeof Ctx>
+     *   context!: RedSky.ContextType<typeof Ctx>
      *   render () {
      *     return <>My context's value: {this.context}</>;
      *   }
@@ -602,15 +604,15 @@ declare namespace RedSky {
 
     /**
      * If using the new style context, re-declare this in your class to be the
-     * `React.ContextType` of your `static contextType`.
+     * `RedSky.ContextType` of your `static contextType`.
      * Should be used with type annotation or static contextType.
      *
      * ```ts
      * static contextType = MyContext
      * // For TS pre-3.7:
-     * context!: React.ContextType<typeof MyContext>
+     * context!: RedSky.ContextType<typeof MyContext>
      * // For TS 3.7 and above:
-     * declare context: React.ContextType<typeof MyContext>
+     * declare context: RedSky.ContextType<typeof MyContext>
      * ```
      *
      * @see https://react.dev/reference/react/Component#context
@@ -678,12 +680,12 @@ declare namespace RedSky {
   }
 
   /**
-   * @deprecated - Equivalent with `React.FC`.
+   * @deprecated - Equivalent with `RedSky.FC`.
    */
   type VFC<P = {}> = VoidFunctionComponent<P>;
 
   /**
-   * @deprecated - Equivalent with `React.FunctionComponent`.
+   * @deprecated - Equivalent with `RedSky.FunctionComponent`.
    */
   interface VoidFunctionComponent<P = {}> {
     (props: P, context?: any): ReactNode;
@@ -1087,321 +1089,6 @@ declare namespace RedSky {
   interface MutableRefObject<T> {
     current: T;
   }
-
-  // This will technically work if you give a Consumer<T> or Provider<T> but it's deprecated and warns
-  /**
-   * Accepts a context object (the value returned from `React.createContext`) and returns the current
-   * context value, as given by the nearest context provider for the given context.
-   *
-   * @version 16.8.0
-   * @see https://react.dev/reference/react/useContext
-   */
-  function useContext<T>(
-    context: Context<T> /*, (not public API) observedBits?: number|boolean */
-  ): T;
-  /**
-   * Returns a stateful value, and a function to update it.
-   *
-   * @version 16.8.0
-   * @see https://react.dev/reference/react/useState
-   */
-  function useState<S>(
-    initialState: S | (() => S)
-  ): [S, Dispatch<SetStateAction<S>>];
-  // convenience overload when first argument is omitted
-  /**
-   * Returns a stateful value, and a function to update it.
-   *
-   * @version 16.8.0
-   * @see https://react.dev/reference/react/useState
-   */
-  function useState<S = undefined>(): [
-    S | undefined,
-    Dispatch<SetStateAction<S | undefined>>
-  ];
-  /**
-   * An alternative to `useState`.
-   *
-   * `useReducer` is usually preferable to `useState` when you have complex state logic that involves
-   * multiple sub-values. It also lets you optimize performance for components that trigger deep
-   * updates because you can pass `dispatch` down instead of callbacks.
-   *
-   * @version 16.8.0
-   * @see https://react.dev/reference/react/useReducer
-   */
-  // overload where dispatch could accept 0 arguments.
-  function useReducer<R extends ReducerWithoutAction<any>, I>(
-    reducer: R,
-    initializerArg: I,
-    initializer: (arg: I) => ReducerStateWithoutAction<R>
-  ): [ReducerStateWithoutAction<R>, DispatchWithoutAction];
-  /**
-   * An alternative to `useState`.
-   *
-   * `useReducer` is usually preferable to `useState` when you have complex state logic that involves
-   * multiple sub-values. It also lets you optimize performance for components that trigger deep
-   * updates because you can pass `dispatch` down instead of callbacks.
-   *
-   * @version 16.8.0
-   * @see https://react.dev/reference/react/useReducer
-   */
-  // overload where dispatch could accept 0 arguments.
-  function useReducer<R extends ReducerWithoutAction<any>>(
-    reducer: R,
-    initializerArg: ReducerStateWithoutAction<R>,
-    initializer?: undefined
-  ): [ReducerStateWithoutAction<R>, DispatchWithoutAction];
-  /**
-   * An alternative to `useState`.
-   *
-   * `useReducer` is usually preferable to `useState` when you have complex state logic that involves
-   * multiple sub-values. It also lets you optimize performance for components that trigger deep
-   * updates because you can pass `dispatch` down instead of callbacks.
-   *
-   * @version 16.8.0
-   * @see https://react.dev/reference/react/useReducer
-   */
-  // overload where "I" may be a subset of ReducerState<R>; used to provide autocompletion.
-  // If "I" matches ReducerState<R> exactly then the last overload will allow initializer to be omitted.
-  // the last overload effectively behaves as if the identity function (x => x) is the initializer.
-  function useReducer<R extends Reducer<any, any>, I>(
-    reducer: R,
-    initializerArg: I & ReducerState<R>,
-    initializer: (arg: I & ReducerState<R>) => ReducerState<R>
-  ): [ReducerState<R>, Dispatch<ReducerAction<R>>];
-  /**
-   * An alternative to `useState`.
-   *
-   * `useReducer` is usually preferable to `useState` when you have complex state logic that involves
-   * multiple sub-values. It also lets you optimize performance for components that trigger deep
-   * updates because you can pass `dispatch` down instead of callbacks.
-   *
-   * @version 16.8.0
-   * @see https://react.dev/reference/react/useReducer
-   */
-  // overload for free "I"; all goes as long as initializer converts it into "ReducerState<R>".
-  function useReducer<R extends Reducer<any, any>, I>(
-    reducer: R,
-    initializerArg: I,
-    initializer: (arg: I) => ReducerState<R>
-  ): [ReducerState<R>, Dispatch<ReducerAction<R>>];
-  /**
-   * An alternative to `useState`.
-   *
-   * `useReducer` is usually preferable to `useState` when you have complex state logic that involves
-   * multiple sub-values. It also lets you optimize performance for components that trigger deep
-   * updates because you can pass `dispatch` down instead of callbacks.
-   *
-   * @version 16.8.0
-   * @see https://react.dev/reference/react/useReducer
-   */
-
-  // I'm not sure if I keep this 2-ary or if I make it (2,3)-ary; it's currently (2,3)-ary.
-  // The Flow types do have an overload for 3-ary invocation with undefined initializer.
-
-  // NOTE: without the ReducerState indirection, TypeScript would reduce S to be the most common
-  // supertype between the reducer's return type and the initialState (or the initializer's return type),
-  // which would prevent autocompletion from ever working.
-
-  // TODO: double-check if this weird overload logic is necessary. It is possible it's either a bug
-  // in older versions, or a regression in newer versions of the typescript completion service.
-  function useReducer<R extends Reducer<any, any>>(
-    reducer: R,
-    initialState: ReducerState<R>,
-    initializer?: undefined
-  ): [ReducerState<R>, Dispatch<ReducerAction<R>>];
-  /**
-   * `useRef` returns a mutable ref object whose `.current` property is initialized to the passed argument
-   * (`initialValue`). The returned object will persist for the full lifetime of the component.
-   *
-   * Note that `useRef()` is useful for more than the `ref` attribute. It’s handy for keeping any mutable
-   * value around similar to how you’d use instance fields in classes.
-   *
-   * @version 16.8.0
-   * @see https://react.dev/reference/react/useRef
-   */
-  function useRef<T>(initialValue: T): MutableRefObject<T>;
-  // convenience overload for refs given as a ref prop as they typically start with a null value
-  /**
-   * `useRef` returns a mutable ref object whose `.current` property is initialized to the passed argument
-   * (`initialValue`). The returned object will persist for the full lifetime of the component.
-   *
-   * Note that `useRef()` is useful for more than the `ref` attribute. It’s handy for keeping any mutable
-   * value around similar to how you’d use instance fields in classes.
-   *
-   * Usage note: if you need the result of useRef to be directly mutable, include `| null` in the type
-   * of the generic argument.
-   *
-   * @version 16.8.0
-   * @see https://react.dev/reference/react/useRef
-   */
-  function useRef<T>(initialValue: T | null): RefObject<T>;
-  // convenience overload for potentially undefined initialValue / call with 0 arguments
-  // has a default to stop it from defaulting to {} instead
-  /**
-   * `useRef` returns a mutable ref object whose `.current` property is initialized to the passed argument
-   * (`initialValue`). The returned object will persist for the full lifetime of the component.
-   *
-   * Note that `useRef()` is useful for more than the `ref` attribute. It’s handy for keeping any mutable
-   * value around similar to how you’d use instance fields in classes.
-   *
-   * @version 16.8.0
-   * @see https://react.dev/reference/react/useRef
-   */
-  function useRef<T = undefined>(): MutableRefObject<T | undefined>;
-  /**
-   * The signature is identical to `useEffect`, but it fires synchronously after all DOM mutations.
-   * Use this to read layout from the DOM and synchronously re-render. Updates scheduled inside
-   * `useLayoutEffect` will be flushed synchronously, before the browser has a chance to paint.
-   *
-   * Prefer the standard `useEffect` when possible to avoid blocking visual updates.
-   *
-   * If you’re migrating code from a class component, `useLayoutEffect` fires in the same phase as
-   * `componentDidMount` and `componentDidUpdate`.
-   *
-   * @version 16.8.0
-   * @see https://react.dev/reference/react/useLayoutEffect
-   */
-  function useLayoutEffect(effect: EffectCallback, deps?: DependencyList): void;
-  /**
-   * Accepts a function that contains imperative, possibly effectful code.
-   *
-   * @param effect Imperative function that can return a cleanup function
-   * @param deps If present, effect will only activate if the values in the list change.
-   *
-   * @version 16.8.0
-   * @see https://react.dev/reference/react/useEffect
-   */
-  function useEffect(effect: EffectCallback, deps?: DependencyList): void;
-  // NOTE: this does not accept strings, but this will have to be fixed by removing strings from type Ref<T>
-  /**
-   * `useImperativeHandle` customizes the instance value that is exposed to parent components when using
-   * `ref`. As always, imperative code using refs should be avoided in most cases.
-   *
-   * `useImperativeHandle` should be used with `React.forwardRef`.
-   *
-   * @version 16.8.0
-   * @see https://react.dev/reference/react/useImperativeHandle
-   */
-  function useImperativeHandle<T, R extends T>(
-    ref: Ref<T> | undefined,
-    init: () => R,
-    deps?: DependencyList
-  ): void;
-  // I made 'inputs' required here and in useMemo as there's no point to memoizing without the memoization key
-  // useCallback(X) is identical to just using X, useMemo(() => Y) is identical to just using Y.
-  /**
-   * `useCallback` will return a memoized version of the callback that only changes if one of the `inputs`
-   * has changed.
-   *
-   * @version 16.8.0
-   * @see https://react.dev/reference/react/useCallback
-   */
-  // A specific function type would not trigger implicit any.
-  // See https://github.com/DefinitelyTyped/DefinitelyTyped/issues/52873#issuecomment-845806435 for a comparison between `Function` and more specific types.
-  // tslint:disable-next-line ban-types
-  function useCallback<T extends Function>(
-    callback: T,
-    deps: DependencyList
-  ): T;
-  /**
-   * `useMemo` will only recompute the memoized value when one of the `deps` has changed.
-   *
-   * @version 16.8.0
-   * @see https://react.dev/reference/react/useMemo
-   */
-  // allow undefined, but don't make it optional as that is very likely a mistake
-  function useMemo<T>(factory: () => T, deps: DependencyList | undefined): T;
-  /**
-   * `useDebugValue` can be used to display a label for custom hooks in React DevTools.
-   *
-   * NOTE: We don’t recommend adding debug values to every custom hook.
-   * It’s most valuable for custom hooks that are part of shared libraries.
-   *
-   * @version 16.8.0
-   * @see https://react.dev/reference/react/useDebugValue
-   */
-  // the name of the custom hook is itself derived from the function name at runtime:
-  // it's just the function name without the "use" prefix.
-  function useDebugValue<T>(value: T, format?: (value: T) => any): void;
-
-  // must be synchronous
-  export type TransitionFunction = () => VoidOrUndefinedOnly;
-  // strange definition to allow vscode to show documentation on the invocation
-  export interface TransitionStartFunction {
-    /**
-     * State updates caused inside the callback are allowed to be deferred.
-     *
-     * **If some state update causes a component to suspend, that state update should be wrapped in a transition.**
-     *
-     * @param callback A _synchronous_ function which causes state updates that can be deferred.
-     */
-    (callback: TransitionFunction): void;
-  }
-
-  /**
-   * Returns a deferred version of the value that may “lag behind” it.
-   *
-   * This is commonly used to keep the interface responsive when you have something that renders immediately
-   * based on user input and something that needs to wait for a data fetch.
-   *
-   * A good example of this is a text input.
-   *
-   * @param value The value that is going to be deferred
-   *
-   * @see https://react.dev/reference/react/useDeferredValue
-   */
-  export function useDeferredValue<T>(value: T): T;
-
-  /**
-   * Allows components to avoid undesirable loading states by waiting for content to load
-   * before transitioning to the next screen. It also allows components to defer slower,
-   * data fetching updates until subsequent renders so that more crucial updates can be
-   * rendered immediately.
-   *
-   * The `useTransition` hook returns two values in an array.
-   *
-   * The first is a boolean, React’s way of informing us whether we’re waiting for the transition to finish.
-   * The second is a function that takes a callback. We can use it to tell React which state we want to defer.
-   *
-   * **If some state update causes a component to suspend, that state update should be wrapped in a transition.**`
-   *
-   * @see https://react.dev/reference/react/useTransition
-   */
-  export function useTransition(): [boolean, TransitionStartFunction];
-
-  /**
-   * Similar to `useTransition` but allows uses where hooks are not available.
-   *
-   * @param callback A _synchronous_ function which causes state updates that can be deferred.
-   */
-  export function startTransition(scope: TransitionFunction): void;
-
-  export function useId(): string;
-
-  /**
-   * @param effect Imperative function that can return a cleanup function
-   * @param deps If present, effect will only activate if the values in the list change.
-   *
-   * @see https://github.com/facebook/react/pull/21913
-   */
-  export function useInsertionEffect(
-    effect: EffectCallback,
-    deps?: DependencyList
-  ): void;
-
-  /**
-   * @param subscribe
-   * @param getSnapshot
-   *
-   * @see https://github.com/reactwg/react-18/discussions/86
-   */
-  // keep in sync with `useSyncExternalStore` from `use-sync-external-store`
-  export function useSyncExternalStore<Snapshot>(
-    subscribe: (onStoreChange: () => void) => () => void,
-    getSnapshot: () => Snapshot,
-    getServerSnapshot?: () => Snapshot
-  ): Snapshot;
 
   //
   // Event System
@@ -2190,6 +1877,7 @@ declare namespace RedSky {
 
   interface HTMLAttributes<T> extends AriaAttributes, DOMAttributes<T> {
     bind?: Writable<string>;
+    class?: { [className: string]: ReactiveOrNot<boolean> };
     // React-specific Attributes
     defaultChecked?: boolean | undefined;
     defaultValue?: string | number | ReadonlyArray<string> | undefined;
@@ -2199,7 +1887,6 @@ declare namespace RedSky {
     // Standard HTML Attributes
     accessKey?: string | undefined;
     autoFocus?: boolean | undefined;
-    className?: string | undefined;
     contentEditable?: Booleanish | "inherit" | undefined;
     contextMenu?: string | undefined;
     dir?: string | undefined;
@@ -3196,7 +2883,7 @@ declare namespace RedSky {
   }
 
   //
-  // React.DOM
+  // RedSky.DOM
   // ----------------------------------------------------------------------
 
   interface ReactHTML {
@@ -3558,7 +3245,7 @@ declare namespace RedSky {
   interface ReactDOM extends ReactHTML, ReactSVG {}
 
   //
-  // React.PropTypes
+  // RedSky.PropTypes
   // ----------------------------------------------------------------------
 
   type Validator<T> = PropTypes.Validator<T>;
@@ -3595,11 +3282,11 @@ declare namespace RedSky {
   }
 
   //
-  // React.Children
+  // RedSky.Children
   // ----------------------------------------------------------------------
 
   /**
-   * @deprecated - Use `typeof React.Children` instead.
+   * @deprecated - Use `typeof RedSky.Children` instead.
    */
   // Sync with type of `const Children`.
   interface ReactChildren {
@@ -3736,10 +3423,10 @@ type ReactManagedAttributes<C, P> = C extends {
 
 declare global {
   /**
-   * @deprecated Use `React.JSX` instead of the global `JSX` namespace.
+   * @deprecated Use `RedSky.JSX` instead of the global `JSX` namespace.
    */
   namespace JSX {
-    // We don't just alias React.ElementType because React.ElementType
+    // We don't just alias RedSky.ElementType because RedSky.ElementType
     // historically does more than we need it to.
     // E.g. it also contains .propTypes and so TS also verifies the declared
     // props type does match the declared .propTypes.
@@ -3749,11 +3436,11 @@ declare global {
     // We could fix this everywhere but we're ultimately not interested in
     // .propTypes assignability so we might as well drop it entirely here to
     //  reduce the work of the type-checker.
-    // TODO: Check impact of making React.ElementType<P = any> = React.JSXElementConstructor<P>
-    type ElementType = string | React.JSXElementConstructor<any>;
-    interface Element extends React.ReactElement<any, any> {}
-    interface ElementClass extends React.Component<any> {
-      render(): React.ReactNode;
+    // TODO: Check impact of making RedSky.ElementType<P = any> = RedSky.JSXElementConstructor<P>
+    type ElementType = string | RedSky.JSXElementConstructor<any>;
+    interface Element extends RedSky.ReactElement<any, any> {}
+    interface ElementClass extends RedSky.Component<any> {
+      render(): RedSky.ReactNode;
     }
     interface ElementAttributesProperty {
       props: {};
@@ -3763,566 +3450,566 @@ declare global {
     }
 
     // We can't recurse forever because `type` can't be self-referential;
-    // let's assume it's reasonable to do a single React.lazy() around a single React.memo() / vice-versa
+    // let's assume it's reasonable to do a single RedSky.lazy() around a single RedSky.memo() / vice-versa
     type LibraryManagedAttributes<C, P> = C extends
-      | React.MemoExoticComponent<infer T>
-      | React.LazyExoticComponent<infer T>
+      | RedSky.MemoExoticComponent<infer T>
+      | RedSky.LazyExoticComponent<infer T>
       ? T extends
-          | React.MemoExoticComponent<infer U>
-          | React.LazyExoticComponent<infer U>
+          | RedSky.MemoExoticComponent<infer U>
+          | RedSky.LazyExoticComponent<infer U>
         ? ReactManagedAttributes<U, P>
         : ReactManagedAttributes<T, P>
       : ReactManagedAttributes<C, P>;
 
-    interface IntrinsicAttributes extends React.Attributes {}
-    interface IntrinsicClassAttributes<T> extends React.ClassAttributes<T> {}
+    interface IntrinsicAttributes extends RedSky.Attributes {}
+    interface IntrinsicClassAttributes<T> extends RedSky.ClassAttributes<T> {}
 
     interface IntrinsicElements {
       // HTML
-      a: React.DetailedHTMLProps<
-        React.AnchorHTMLAttributes<HTMLAnchorElement>,
+      a: RedSky.DetailedHTMLProps<
+        RedSky.AnchorHTMLAttributes<HTMLAnchorElement>,
         HTMLAnchorElement
       >;
-      abbr: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
+      abbr: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      address: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
+      address: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      area: React.DetailedHTMLProps<
-        React.AreaHTMLAttributes<HTMLAreaElement>,
+      area: RedSky.DetailedHTMLProps<
+        RedSky.AreaHTMLAttributes<HTMLAreaElement>,
         HTMLAreaElement
       >;
-      article: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
+      article: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      aside: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
+      aside: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      audio: React.DetailedHTMLProps<
-        React.AudioHTMLAttributes<HTMLAudioElement>,
+      audio: RedSky.DetailedHTMLProps<
+        RedSky.AudioHTMLAttributes<HTMLAudioElement>,
         HTMLAudioElement
       >;
-      b: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
+      b: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      base: React.DetailedHTMLProps<
-        React.BaseHTMLAttributes<HTMLBaseElement>,
+      base: RedSky.DetailedHTMLProps<
+        RedSky.BaseHTMLAttributes<HTMLBaseElement>,
         HTMLBaseElement
       >;
-      bdi: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
+      bdi: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      bdo: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
+      bdo: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      big: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
+      big: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      blockquote: React.DetailedHTMLProps<
-        React.BlockquoteHTMLAttributes<HTMLQuoteElement>,
+      blockquote: RedSky.DetailedHTMLProps<
+        RedSky.BlockquoteHTMLAttributes<HTMLQuoteElement>,
         HTMLQuoteElement
       >;
-      body: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLBodyElement>,
+      body: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLBodyElement>,
         HTMLBodyElement
       >;
-      br: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLBRElement>,
+      br: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLBRElement>,
         HTMLBRElement
       >;
-      button: React.DetailedHTMLProps<
-        React.ButtonHTMLAttributes<HTMLButtonElement>,
+      button: RedSky.DetailedHTMLProps<
+        RedSky.ButtonHTMLAttributes<HTMLButtonElement>,
         HTMLButtonElement
       >;
-      canvas: React.DetailedHTMLProps<
-        React.CanvasHTMLAttributes<HTMLCanvasElement>,
+      canvas: RedSky.DetailedHTMLProps<
+        RedSky.CanvasHTMLAttributes<HTMLCanvasElement>,
         HTMLCanvasElement
       >;
-      caption: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
+      caption: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      center: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
+      center: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      cite: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
+      cite: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      code: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
+      code: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      col: React.DetailedHTMLProps<
-        React.ColHTMLAttributes<HTMLTableColElement>,
+      col: RedSky.DetailedHTMLProps<
+        RedSky.ColHTMLAttributes<HTMLTableColElement>,
         HTMLTableColElement
       >;
-      colgroup: React.DetailedHTMLProps<
-        React.ColgroupHTMLAttributes<HTMLTableColElement>,
+      colgroup: RedSky.DetailedHTMLProps<
+        RedSky.ColgroupHTMLAttributes<HTMLTableColElement>,
         HTMLTableColElement
       >;
-      data: React.DetailedHTMLProps<
-        React.DataHTMLAttributes<HTMLDataElement>,
+      data: RedSky.DetailedHTMLProps<
+        RedSky.DataHTMLAttributes<HTMLDataElement>,
         HTMLDataElement
       >;
-      datalist: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLDataListElement>,
+      datalist: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLDataListElement>,
         HTMLDataListElement
       >;
-      dd: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
+      dd: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      del: React.DetailedHTMLProps<
-        React.DelHTMLAttributes<HTMLModElement>,
+      del: RedSky.DetailedHTMLProps<
+        RedSky.DelHTMLAttributes<HTMLModElement>,
         HTMLModElement
       >;
-      details: React.DetailedHTMLProps<
-        React.DetailsHTMLAttributes<HTMLDetailsElement>,
+      details: RedSky.DetailedHTMLProps<
+        RedSky.DetailsHTMLAttributes<HTMLDetailsElement>,
         HTMLDetailsElement
       >;
-      dfn: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
+      dfn: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      dialog: React.DetailedHTMLProps<
-        React.DialogHTMLAttributes<HTMLDialogElement>,
+      dialog: RedSky.DetailedHTMLProps<
+        RedSky.DialogHTMLAttributes<HTMLDialogElement>,
         HTMLDialogElement
       >;
-      div: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLDivElement>,
+      div: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLDivElement>,
         HTMLDivElement
       >;
-      dl: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLDListElement>,
+      dl: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLDListElement>,
         HTMLDListElement
       >;
-      dt: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
+      dt: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      em: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
+      em: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      embed: React.DetailedHTMLProps<
-        React.EmbedHTMLAttributes<HTMLEmbedElement>,
+      embed: RedSky.DetailedHTMLProps<
+        RedSky.EmbedHTMLAttributes<HTMLEmbedElement>,
         HTMLEmbedElement
       >;
-      fieldset: React.DetailedHTMLProps<
-        React.FieldsetHTMLAttributes<HTMLFieldSetElement>,
+      fieldset: RedSky.DetailedHTMLProps<
+        RedSky.FieldsetHTMLAttributes<HTMLFieldSetElement>,
         HTMLFieldSetElement
       >;
-      figcaption: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
+      figcaption: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      figure: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
+      figure: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      footer: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
+      footer: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      form: React.DetailedHTMLProps<
-        React.FormHTMLAttributes<HTMLFormElement>,
+      form: RedSky.DetailedHTMLProps<
+        RedSky.FormHTMLAttributes<HTMLFormElement>,
         HTMLFormElement
       >;
-      h1: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLHeadingElement>,
+      h1: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLHeadingElement>,
         HTMLHeadingElement
       >;
-      h2: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLHeadingElement>,
+      h2: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLHeadingElement>,
         HTMLHeadingElement
       >;
-      h3: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLHeadingElement>,
+      h3: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLHeadingElement>,
         HTMLHeadingElement
       >;
-      h4: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLHeadingElement>,
+      h4: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLHeadingElement>,
         HTMLHeadingElement
       >;
-      h5: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLHeadingElement>,
+      h5: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLHeadingElement>,
         HTMLHeadingElement
       >;
-      h6: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLHeadingElement>,
+      h6: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLHeadingElement>,
         HTMLHeadingElement
       >;
-      head: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLHeadElement>,
+      head: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLHeadElement>,
         HTMLHeadElement
       >;
-      header: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
+      header: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      hgroup: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
+      hgroup: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      hr: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLHRElement>,
+      hr: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLHRElement>,
         HTMLHRElement
       >;
-      html: React.DetailedHTMLProps<
-        React.HtmlHTMLAttributes<HTMLHtmlElement>,
+      html: RedSky.DetailedHTMLProps<
+        RedSky.HtmlHTMLAttributes<HTMLHtmlElement>,
         HTMLHtmlElement
       >;
-      i: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
+      i: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      iframe: React.DetailedHTMLProps<
-        React.IframeHTMLAttributes<HTMLIFrameElement>,
+      iframe: RedSky.DetailedHTMLProps<
+        RedSky.IframeHTMLAttributes<HTMLIFrameElement>,
         HTMLIFrameElement
       >;
-      img: React.DetailedHTMLProps<
-        React.ImgHTMLAttributes<HTMLImageElement>,
+      img: RedSky.DetailedHTMLProps<
+        RedSky.ImgHTMLAttributes<HTMLImageElement>,
         HTMLImageElement
       >;
-      input: React.DetailedHTMLProps<
-        React.InputHTMLAttributes<HTMLInputElement>,
+      input: RedSky.DetailedHTMLProps<
+        RedSky.InputHTMLAttributes<HTMLInputElement>,
         HTMLInputElement
       >;
-      ins: React.DetailedHTMLProps<
-        React.InsHTMLAttributes<HTMLModElement>,
+      ins: RedSky.DetailedHTMLProps<
+        RedSky.InsHTMLAttributes<HTMLModElement>,
         HTMLModElement
       >;
-      kbd: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
+      kbd: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      keygen: React.DetailedHTMLProps<
-        React.KeygenHTMLAttributes<HTMLElement>,
+      keygen: RedSky.DetailedHTMLProps<
+        RedSky.KeygenHTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      label: React.DetailedHTMLProps<
-        React.LabelHTMLAttributes<HTMLLabelElement>,
+      label: RedSky.DetailedHTMLProps<
+        RedSky.LabelHTMLAttributes<HTMLLabelElement>,
         HTMLLabelElement
       >;
-      legend: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLLegendElement>,
+      legend: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLLegendElement>,
         HTMLLegendElement
       >;
-      li: React.DetailedHTMLProps<
-        React.LiHTMLAttributes<HTMLLIElement>,
+      li: RedSky.DetailedHTMLProps<
+        RedSky.LiHTMLAttributes<HTMLLIElement>,
         HTMLLIElement
       >;
-      link: React.DetailedHTMLProps<
-        React.LinkHTMLAttributes<HTMLLinkElement>,
+      link: RedSky.DetailedHTMLProps<
+        RedSky.LinkHTMLAttributes<HTMLLinkElement>,
         HTMLLinkElement
       >;
-      main: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
+      main: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      map: React.DetailedHTMLProps<
-        React.MapHTMLAttributes<HTMLMapElement>,
+      map: RedSky.DetailedHTMLProps<
+        RedSky.MapHTMLAttributes<HTMLMapElement>,
         HTMLMapElement
       >;
-      mark: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
+      mark: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      menu: React.DetailedHTMLProps<
-        React.MenuHTMLAttributes<HTMLElement>,
+      menu: RedSky.DetailedHTMLProps<
+        RedSky.MenuHTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      menuitem: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
+      menuitem: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      meta: React.DetailedHTMLProps<
-        React.MetaHTMLAttributes<HTMLMetaElement>,
+      meta: RedSky.DetailedHTMLProps<
+        RedSky.MetaHTMLAttributes<HTMLMetaElement>,
         HTMLMetaElement
       >;
-      meter: React.DetailedHTMLProps<
-        React.MeterHTMLAttributes<HTMLMeterElement>,
+      meter: RedSky.DetailedHTMLProps<
+        RedSky.MeterHTMLAttributes<HTMLMeterElement>,
         HTMLMeterElement
       >;
-      nav: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
+      nav: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      noindex: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
+      noindex: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      noscript: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
+      noscript: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      object: React.DetailedHTMLProps<
-        React.ObjectHTMLAttributes<HTMLObjectElement>,
+      object: RedSky.DetailedHTMLProps<
+        RedSky.ObjectHTMLAttributes<HTMLObjectElement>,
         HTMLObjectElement
       >;
-      ol: React.DetailedHTMLProps<
-        React.OlHTMLAttributes<HTMLOListElement>,
+      ol: RedSky.DetailedHTMLProps<
+        RedSky.OlHTMLAttributes<HTMLOListElement>,
         HTMLOListElement
       >;
-      optgroup: React.DetailedHTMLProps<
-        React.OptgroupHTMLAttributes<HTMLOptGroupElement>,
+      optgroup: RedSky.DetailedHTMLProps<
+        RedSky.OptgroupHTMLAttributes<HTMLOptGroupElement>,
         HTMLOptGroupElement
       >;
-      option: React.DetailedHTMLProps<
-        React.OptionHTMLAttributes<HTMLOptionElement>,
+      option: RedSky.DetailedHTMLProps<
+        RedSky.OptionHTMLAttributes<HTMLOptionElement>,
         HTMLOptionElement
       >;
-      output: React.DetailedHTMLProps<
-        React.OutputHTMLAttributes<HTMLOutputElement>,
+      output: RedSky.DetailedHTMLProps<
+        RedSky.OutputHTMLAttributes<HTMLOutputElement>,
         HTMLOutputElement
       >;
-      p: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLParagraphElement>,
+      p: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLParagraphElement>,
         HTMLParagraphElement
       >;
-      param: React.DetailedHTMLProps<
-        React.ParamHTMLAttributes<HTMLParamElement>,
+      param: RedSky.DetailedHTMLProps<
+        RedSky.ParamHTMLAttributes<HTMLParamElement>,
         HTMLParamElement
       >;
-      picture: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
+      picture: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      pre: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLPreElement>,
+      pre: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLPreElement>,
         HTMLPreElement
       >;
-      progress: React.DetailedHTMLProps<
-        React.ProgressHTMLAttributes<HTMLProgressElement>,
+      progress: RedSky.DetailedHTMLProps<
+        RedSky.ProgressHTMLAttributes<HTMLProgressElement>,
         HTMLProgressElement
       >;
-      q: React.DetailedHTMLProps<
-        React.QuoteHTMLAttributes<HTMLQuoteElement>,
+      q: RedSky.DetailedHTMLProps<
+        RedSky.QuoteHTMLAttributes<HTMLQuoteElement>,
         HTMLQuoteElement
       >;
-      rp: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
+      rp: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      rt: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
+      rt: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      ruby: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
+      ruby: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      s: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
+      s: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      samp: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
+      samp: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      search: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
+      search: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      slot: React.DetailedHTMLProps<
-        React.SlotHTMLAttributes<HTMLSlotElement>,
+      slot: RedSky.DetailedHTMLProps<
+        RedSky.SlotHTMLAttributes<HTMLSlotElement>,
         HTMLSlotElement
       >;
-      script: React.DetailedHTMLProps<
-        React.ScriptHTMLAttributes<HTMLScriptElement>,
+      script: RedSky.DetailedHTMLProps<
+        RedSky.ScriptHTMLAttributes<HTMLScriptElement>,
         HTMLScriptElement
       >;
-      section: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
+      section: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      select: React.DetailedHTMLProps<
-        React.SelectHTMLAttributes<HTMLSelectElement>,
+      select: RedSky.DetailedHTMLProps<
+        RedSky.SelectHTMLAttributes<HTMLSelectElement>,
         HTMLSelectElement
       >;
-      small: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
+      small: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      source: React.DetailedHTMLProps<
-        React.SourceHTMLAttributes<HTMLSourceElement>,
+      source: RedSky.DetailedHTMLProps<
+        RedSky.SourceHTMLAttributes<HTMLSourceElement>,
         HTMLSourceElement
       >;
-      span: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLSpanElement>,
+      span: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLSpanElement>,
         HTMLSpanElement
       >;
-      strong: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
+      strong: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      style: React.DetailedHTMLProps<
-        React.StyleHTMLAttributes<HTMLStyleElement>,
+      style: RedSky.DetailedHTMLProps<
+        RedSky.StyleHTMLAttributes<HTMLStyleElement>,
         HTMLStyleElement
       >;
-      sub: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
+      sub: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      summary: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
+      summary: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      sup: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
+      sup: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      table: React.DetailedHTMLProps<
-        React.TableHTMLAttributes<HTMLTableElement>,
+      table: RedSky.DetailedHTMLProps<
+        RedSky.TableHTMLAttributes<HTMLTableElement>,
         HTMLTableElement
       >;
-      template: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLTemplateElement>,
+      template: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLTemplateElement>,
         HTMLTemplateElement
       >;
-      tbody: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLTableSectionElement>,
+      tbody: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLTableSectionElement>,
         HTMLTableSectionElement
       >;
-      td: React.DetailedHTMLProps<
-        React.TdHTMLAttributes<HTMLTableDataCellElement>,
+      td: RedSky.DetailedHTMLProps<
+        RedSky.TdHTMLAttributes<HTMLTableDataCellElement>,
         HTMLTableDataCellElement
       >;
-      textarea: React.DetailedHTMLProps<
-        React.TextareaHTMLAttributes<HTMLTextAreaElement>,
+      textarea: RedSky.DetailedHTMLProps<
+        RedSky.TextareaHTMLAttributes<HTMLTextAreaElement>,
         HTMLTextAreaElement
       >;
-      tfoot: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLTableSectionElement>,
+      tfoot: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLTableSectionElement>,
         HTMLTableSectionElement
       >;
-      th: React.DetailedHTMLProps<
-        React.ThHTMLAttributes<HTMLTableHeaderCellElement>,
+      th: RedSky.DetailedHTMLProps<
+        RedSky.ThHTMLAttributes<HTMLTableHeaderCellElement>,
         HTMLTableHeaderCellElement
       >;
-      thead: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLTableSectionElement>,
+      thead: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLTableSectionElement>,
         HTMLTableSectionElement
       >;
-      time: React.DetailedHTMLProps<
-        React.TimeHTMLAttributes<HTMLTimeElement>,
+      time: RedSky.DetailedHTMLProps<
+        RedSky.TimeHTMLAttributes<HTMLTimeElement>,
         HTMLTimeElement
       >;
-      title: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLTitleElement>,
+      title: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLTitleElement>,
         HTMLTitleElement
       >;
-      tr: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLTableRowElement>,
+      tr: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLTableRowElement>,
         HTMLTableRowElement
       >;
-      track: React.DetailedHTMLProps<
-        React.TrackHTMLAttributes<HTMLTrackElement>,
+      track: RedSky.DetailedHTMLProps<
+        RedSky.TrackHTMLAttributes<HTMLTrackElement>,
         HTMLTrackElement
       >;
-      u: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
+      u: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      ul: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLUListElement>,
+      ul: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLUListElement>,
         HTMLUListElement
       >;
-      var: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
+      var: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      video: React.DetailedHTMLProps<
-        React.VideoHTMLAttributes<HTMLVideoElement>,
+      video: RedSky.DetailedHTMLProps<
+        RedSky.VideoHTMLAttributes<HTMLVideoElement>,
         HTMLVideoElement
       >;
-      wbr: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
+      wbr: RedSky.DetailedHTMLProps<
+        RedSky.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      webview: React.DetailedHTMLProps<
-        React.WebViewHTMLAttributes<HTMLWebViewElement>,
+      webview: RedSky.DetailedHTMLProps<
+        RedSky.WebViewHTMLAttributes<HTMLWebViewElement>,
         HTMLWebViewElement
       >;
 
       // SVG
-      svg: React.SVGProps<SVGSVGElement>;
+      svg: RedSky.SVGProps<SVGSVGElement>;
 
-      animate: React.SVGProps<SVGElement>; // TODO: It is SVGAnimateElement but is not in TypeScript's lib.dom.d.ts for now.
-      animateMotion: React.SVGProps<SVGElement>;
-      animateTransform: React.SVGProps<SVGElement>; // TODO: It is SVGAnimateTransformElement but is not in TypeScript's lib.dom.d.ts for now.
-      circle: React.SVGProps<SVGCircleElement>;
-      clipPath: React.SVGProps<SVGClipPathElement>;
-      defs: React.SVGProps<SVGDefsElement>;
-      desc: React.SVGProps<SVGDescElement>;
-      ellipse: React.SVGProps<SVGEllipseElement>;
-      feBlend: React.SVGProps<SVGFEBlendElement>;
-      feColorMatrix: React.SVGProps<SVGFEColorMatrixElement>;
-      feComponentTransfer: React.SVGProps<SVGFEComponentTransferElement>;
-      feComposite: React.SVGProps<SVGFECompositeElement>;
-      feConvolveMatrix: React.SVGProps<SVGFEConvolveMatrixElement>;
-      feDiffuseLighting: React.SVGProps<SVGFEDiffuseLightingElement>;
-      feDisplacementMap: React.SVGProps<SVGFEDisplacementMapElement>;
-      feDistantLight: React.SVGProps<SVGFEDistantLightElement>;
-      feDropShadow: React.SVGProps<SVGFEDropShadowElement>;
-      feFlood: React.SVGProps<SVGFEFloodElement>;
-      feFuncA: React.SVGProps<SVGFEFuncAElement>;
-      feFuncB: React.SVGProps<SVGFEFuncBElement>;
-      feFuncG: React.SVGProps<SVGFEFuncGElement>;
-      feFuncR: React.SVGProps<SVGFEFuncRElement>;
-      feGaussianBlur: React.SVGProps<SVGFEGaussianBlurElement>;
-      feImage: React.SVGProps<SVGFEImageElement>;
-      feMerge: React.SVGProps<SVGFEMergeElement>;
-      feMergeNode: React.SVGProps<SVGFEMergeNodeElement>;
-      feMorphology: React.SVGProps<SVGFEMorphologyElement>;
-      feOffset: React.SVGProps<SVGFEOffsetElement>;
-      fePointLight: React.SVGProps<SVGFEPointLightElement>;
-      feSpecularLighting: React.SVGProps<SVGFESpecularLightingElement>;
-      feSpotLight: React.SVGProps<SVGFESpotLightElement>;
-      feTile: React.SVGProps<SVGFETileElement>;
-      feTurbulence: React.SVGProps<SVGFETurbulenceElement>;
-      filter: React.SVGProps<SVGFilterElement>;
-      foreignObject: React.SVGProps<SVGForeignObjectElement>;
-      g: React.SVGProps<SVGGElement>;
-      image: React.SVGProps<SVGImageElement>;
-      line: React.SVGLineElementAttributes<SVGLineElement>;
-      linearGradient: React.SVGProps<SVGLinearGradientElement>;
-      marker: React.SVGProps<SVGMarkerElement>;
-      mask: React.SVGProps<SVGMaskElement>;
-      metadata: React.SVGProps<SVGMetadataElement>;
-      mpath: React.SVGProps<SVGElement>;
-      path: React.SVGProps<SVGPathElement>;
-      pattern: React.SVGProps<SVGPatternElement>;
-      polygon: React.SVGProps<SVGPolygonElement>;
-      polyline: React.SVGProps<SVGPolylineElement>;
-      radialGradient: React.SVGProps<SVGRadialGradientElement>;
-      rect: React.SVGProps<SVGRectElement>;
-      stop: React.SVGProps<SVGStopElement>;
-      switch: React.SVGProps<SVGSwitchElement>;
-      symbol: React.SVGProps<SVGSymbolElement>;
-      text: React.SVGTextElementAttributes<SVGTextElement>;
-      textPath: React.SVGProps<SVGTextPathElement>;
-      tspan: React.SVGProps<SVGTSpanElement>;
-      use: React.SVGProps<SVGUseElement>;
-      view: React.SVGProps<SVGViewElement>;
+      animate: RedSky.SVGProps<SVGElement>; // TODO: It is SVGAnimateElement but is not in TypeScript's lib.dom.d.ts for now.
+      animateMotion: RedSky.SVGProps<SVGElement>;
+      animateTransform: RedSky.SVGProps<SVGElement>; // TODO: It is SVGAnimateTransformElement but is not in TypeScript's lib.dom.d.ts for now.
+      circle: RedSky.SVGProps<SVGCircleElement>;
+      clipPath: RedSky.SVGProps<SVGClipPathElement>;
+      defs: RedSky.SVGProps<SVGDefsElement>;
+      desc: RedSky.SVGProps<SVGDescElement>;
+      ellipse: RedSky.SVGProps<SVGEllipseElement>;
+      feBlend: RedSky.SVGProps<SVGFEBlendElement>;
+      feColorMatrix: RedSky.SVGProps<SVGFEColorMatrixElement>;
+      feComponentTransfer: RedSky.SVGProps<SVGFEComponentTransferElement>;
+      feComposite: RedSky.SVGProps<SVGFECompositeElement>;
+      feConvolveMatrix: RedSky.SVGProps<SVGFEConvolveMatrixElement>;
+      feDiffuseLighting: RedSky.SVGProps<SVGFEDiffuseLightingElement>;
+      feDisplacementMap: RedSky.SVGProps<SVGFEDisplacementMapElement>;
+      feDistantLight: RedSky.SVGProps<SVGFEDistantLightElement>;
+      feDropShadow: RedSky.SVGProps<SVGFEDropShadowElement>;
+      feFlood: RedSky.SVGProps<SVGFEFloodElement>;
+      feFuncA: RedSky.SVGProps<SVGFEFuncAElement>;
+      feFuncB: RedSky.SVGProps<SVGFEFuncBElement>;
+      feFuncG: RedSky.SVGProps<SVGFEFuncGElement>;
+      feFuncR: RedSky.SVGProps<SVGFEFuncRElement>;
+      feGaussianBlur: RedSky.SVGProps<SVGFEGaussianBlurElement>;
+      feImage: RedSky.SVGProps<SVGFEImageElement>;
+      feMerge: RedSky.SVGProps<SVGFEMergeElement>;
+      feMergeNode: RedSky.SVGProps<SVGFEMergeNodeElement>;
+      feMorphology: RedSky.SVGProps<SVGFEMorphologyElement>;
+      feOffset: RedSky.SVGProps<SVGFEOffsetElement>;
+      fePointLight: RedSky.SVGProps<SVGFEPointLightElement>;
+      feSpecularLighting: RedSky.SVGProps<SVGFESpecularLightingElement>;
+      feSpotLight: RedSky.SVGProps<SVGFESpotLightElement>;
+      feTile: RedSky.SVGProps<SVGFETileElement>;
+      feTurbulence: RedSky.SVGProps<SVGFETurbulenceElement>;
+      filter: RedSky.SVGProps<SVGFilterElement>;
+      foreignObject: RedSky.SVGProps<SVGForeignObjectElement>;
+      g: RedSky.SVGProps<SVGGElement>;
+      image: RedSky.SVGProps<SVGImageElement>;
+      line: RedSky.SVGLineElementAttributes<SVGLineElement>;
+      linearGradient: RedSky.SVGProps<SVGLinearGradientElement>;
+      marker: RedSky.SVGProps<SVGMarkerElement>;
+      mask: RedSky.SVGProps<SVGMaskElement>;
+      metadata: RedSky.SVGProps<SVGMetadataElement>;
+      mpath: RedSky.SVGProps<SVGElement>;
+      path: RedSky.SVGProps<SVGPathElement>;
+      pattern: RedSky.SVGProps<SVGPatternElement>;
+      polygon: RedSky.SVGProps<SVGPolygonElement>;
+      polyline: RedSky.SVGProps<SVGPolylineElement>;
+      radialGradient: RedSky.SVGProps<SVGRadialGradientElement>;
+      rect: RedSky.SVGProps<SVGRectElement>;
+      stop: RedSky.SVGProps<SVGStopElement>;
+      switch: RedSky.SVGProps<SVGSwitchElement>;
+      symbol: RedSky.SVGProps<SVGSymbolElement>;
+      text: RedSky.SVGTextElementAttributes<SVGTextElement>;
+      textPath: RedSky.SVGProps<SVGTextPathElement>;
+      tspan: RedSky.SVGProps<SVGTSpanElement>;
+      use: RedSky.SVGProps<SVGUseElement>;
+      view: RedSky.SVGProps<SVGViewElement>;
     }
   }
 }
 
-// React.JSX needs to point to global.JSX to keep global module augmentations intact.
+// RedSky.JSX needs to point to global.JSX to keep global module augmentations intact.
 // But we can't access global.JSX so we need to create these aliases instead.
-// Once the global JSX namespace will be removed we replace React.JSX with the contents of global.JSX
+// Once the global JSX namespace will be removed we replace RedSky.JSX with the contents of global.JSX
 type GlobalJSXElementType = JSX.ElementType;
 interface GlobalJSXElement extends JSX.Element {}
 interface GlobalJSXElementClass extends JSX.ElementClass {}

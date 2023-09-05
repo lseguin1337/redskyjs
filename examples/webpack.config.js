@@ -2,7 +2,7 @@ const path = require('path');
 
 module.exports = {
   mode: 'development',
-  entry: './toto.tsx',
+  entry: './main.ts',
   module: {
     rules: [
       {
