@@ -1,7 +1,7 @@
 {
-  "name": "redsky2",
+  "name": "@redsky2/common",
   "version": "0.0.1",
-  "description": "",
+  "description": "Welcome to RedSky JS, a declarative approach to building web applications that makes your code clean, easy to read, and incredibly dynamic. Dive right into the details below.",
   "main": "dist/index",
   "scripts": {
     "build:esm": "tsc",
@@ -10,12 +10,25 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "ts-loader": "9.4.4",
     "typescript": "5.2.2",
     "webpack": "5.88.2",
     "webpack-cli": "5.1.4",
     "webpack-dev-server": "4.15.1"
-  }
+  },
+  "types": "./dist/index.d.ts",
+  "directories": {
+    "example": "examples",
+    "lib": "lib"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lseguin1337/redskyjs.git"
+  },
+  "bugs": {
+    "url": "https://github.com/lseguin1337/redskyjs/issues"
+  },
+  "homepage": "https://github.com/lseguin1337/redskyjs#readme"
 }
