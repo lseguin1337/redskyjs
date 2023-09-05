@@ -24,7 +24,7 @@ module.exports = {
     filename: 'lib.umd.js',
     path: path.resolve(__dirname, 'dist'),
     library: {
-      name: 'rds',
+      name: 'redsky2',
       type: 'umd'
     },
   },
