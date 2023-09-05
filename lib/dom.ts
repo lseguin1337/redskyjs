@@ -1,7 +1,24 @@
 import { NNode } from "./component";
-import { contextManager, getCurrentContext } from "./context";
+import {
+  VmContext,
+  contextManager,
+  createContext,
+  getCurrentContext,
+} from "./context";
 import { onDestroy } from "./hook";
-import { Reactive, Writable, derived, of, reactive } from "./reactive";
+import {
+  Reactive,
+  Writable,
+  derived,
+  isReactive,
+  of,
+  reactive,
+} from "./reactive";
+
+type ReactiveOrNot<T> = Reactive<T> | T;
+type OneOrMany<T> = T | T[];
+type FactoryOrNot<T> = (() => T) | T;
+type ElChild = FactoryOrNot<ReactiveOrNot<OneOrMany<NNode>>>;
 
 export function toNode(value: NNode) {
   if (typeof value === "string") return document.createTextNode(value);
@@ -14,20 +31,69 @@ export function ifBlock(
   elseBlock: () => NNode = () => comment("if block")
 ) {
   const { wrap } = contextManager();
-  return derived(
+  const conditionBlock = derived(
     condition,
     wrap((isActive) => {
       if (isActive) return block();
       return elseBlock();
     })
   );
+
+  return {
+    ...conditionBlock,
+    elseIf(elseIfCondition: Reactive<boolean>, elseIfTemplate: () => NNode) {
+      // TODO: implement elseIf
+      return this;
+    },
+    else(elseTemplate: () => NNode) {
+      elseBlock = elseTemplate;
+      return this;
+    },
+  };
 }
 
-export function forBlock() {
-  // TODO: for block
+export function forBlock<T>(
+  list: ReactiveOrNot<T[]>,
+  template: (item: T, index: number, items: T[]) => NNode,
+  resolveKey: (item: T, index: number) => any = (_item, index) => index
+) {
+  const block = reactive<NNode[]>((push) => {
+    const nodes = new Map<any, { node: Node; vm: VmContext }>();
+    return of(list).subscribe((items) => {
+      const usedKeys = new Set<any>();
+
+      const compiledNodes = items.map((item, index) => {
+        const key = resolveKey(item, index);
+        usedKeys.add(key);
+        const cache = nodes.get(key);
+        if (cache) return cache.node;
+        return createContext((vm) => {
+          const node = toNode(template(item, index, items));
+          nodes.set(key, { node, vm: vm as VmContext });
+          return node;
+        });
+      });
+
+      for (const storedKey of nodes.keys()) {
+        if (!usedKeys.has(storedKey)) {
+          nodes.get(storedKey)!.vm.$destroy();
+          nodes.delete(storedKey);
+        }
+      }
+
+      push(compiledNodes);
+    });
+  });
+  return {
+    ...block,
+    empty(emptyTemplate: () => NNode) {
+      // TODO: implement empty template
+      return this;
+    },
+  };
 }
 
-export function switchBlock<T>($: Reactive<T> | T) {
+export function switchBlock<T>($: ReactiveOrNot<T>) {
   const { wrap } = contextManager();
   let defaultFn: ((value: T) => NNode) | undefined;
   const cases = new Map<T, (value: T) => NNode>();
@@ -55,7 +121,7 @@ export function switchBlock<T>($: Reactive<T> | T) {
   };
 }
 
-export function awaitBlock<T>($: Reactive<Promise<T>> | Promise<T>) {
+export function awaitBlock<T>($: ReactiveOrNot<Promise<T>>) {
   const { wrap } = contextManager();
   const noop = () => comment("text");
   const templates = {
@@ -105,10 +171,16 @@ export function awaitBlock<T>($: Reactive<Promise<T>> | Promise<T>) {
   };
 }
 
-function react<T>(readable: Reactive<T> | T, render: (value: T) => void) {
-  const fn = render;
-  if (typeof readable === "object" && readable && "subscribe" in readable)
-    return onDestroy(readable.subscribe(fn));
+function react<T>(
+  readable: ReactiveOrNot<T>,
+  render: (newValue: T, oldValue: T | undefined) => void
+) {
+  let oldValue: T | undefined = undefined;
+  const fn = (newValue: T) => {
+    render(newValue, oldValue);
+    oldValue = newValue;
+  };
+  if (isReactive(readable)) return onDestroy(readable.subscribe(fn));
   fn(readable);
 }
 
@@ -119,26 +191,31 @@ export function el(localName: string) {
   if (ctx.options?.styleScopeId)
     node.setAttribute(`component-${ctx.options.styleScopeId}`, "");
 
-  function El(...children: (Reactive<NNode> | NNode | (() => NNode))[]) {
+  function El(...children: ElChild[]) {
     for (const childComponent of children) {
-      const reactiveChild = of<NNode>(
+      const reactiveChild = of(
         typeof childComponent === "function" ? childComponent() : childComponent
       );
-      const childNode = derived(reactiveChild, (c) => toNode(c as NNode));
-      let prevNode: Element | Comment | Text | null = null;
-      react(childNode, (cnode) => {
-        if (prevNode) {
-          prevNode.replaceWith(cnode);
-        } else {
-          node.append(cnode);
+      const childNodes = derived(reactiveChild, (value) => {
+        if (value instanceof Array) {
+          if (value.length === 0) return [comment("empty list")];
+          return value.map(toNode);
         }
-        prevNode = cnode as any;
+        return [toNode(value)];
+      });
+      react(childNodes, (nodes, prevNodes) => {
+        if (prevNodes) {
+          replaceWith(prevNodes, nodes);
+        } else {
+          node.append(...nodes);
+        }
+        prevNodes = nodes;
       });
     }
     return node;
   }
 
-  El.class = (classes: { [name: string]: Reactive<boolean> | boolean }) => {
+  El.class = (classes: { [name: string]: ReactiveOrNot<boolean> }) => {
     for (const className in classes) {
       react(classes[className], (isActive) => {
         if (isActive) node.classList.add(className);
@@ -148,10 +225,19 @@ export function el(localName: string) {
     return El;
   };
 
-  El.attr = (attrs: { [name: string]: Reactive<string> | string }) => {
+  El.attr = (attrs: { [name: string]: ReactiveOrNot<string> }) => {
     for (const attrName in attrs) {
       react(attrs[attrName], (attrValue) => {
         node.setAttribute(attrName, attrValue);
+      });
+    }
+    return El;
+  };
+
+  El.props = (props: { [name: string]: ReactiveOrNot<any> }) => {
+    for (const propName in props) {
+      react(props[propName], (propValue) => {
+        (node as any)[propName] = propValue;
       });
     }
     return El;
@@ -181,14 +267,14 @@ export function el(localName: string) {
   };
 
   El.plug = (directiveFn: (element: Element) => void) => {
-    directiveFn(node);
+    directiveFn.call(El, node);
     return El;
   };
 
   return El;
 }
 
-export function text(text: Reactive<string | number> | string | number) {
+export function text(text: ReactiveOrNot<string | number>) {
   const textNode = document.createTextNode("");
   react(text, (value) => {
     textNode.data = `${value}`;
@@ -198,4 +284,18 @@ export function text(text: Reactive<string | number> | string | number) {
 
 export function comment(data: string) {
   return document.createComment(data);
+}
+
+function replaceWith(oldValue: Node[], newValue: Node[]) {
+  // TODO: avoid moving all nodes
+  const oldNodes = oldValue.concat().reverse();
+  const newNodes = newValue.concat().reverse();
+
+  (oldNodes[0] as any).replaceWith(newNodes[0]);
+  for (let i = 1; i < oldNodes.length; i++) (oldNodes[i] as any).remove();
+  for (let i = 1; i < newNodes.length; i++) {
+    const prev = newNodes[i - 1];
+    const current = newNodes[i];
+    prev.parentNode!.insertBefore(current, prev);
+  }
 }

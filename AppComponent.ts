@@ -1,6 +1,6 @@
 import { CalcComponent } from "./CalcComponent";
 import { createComponent } from "./lib/component";
-import { awaitBlock, ifBlock, el, switchBlock } from "./lib/dom";
+import { awaitBlock, ifBlock, el, switchBlock, forBlock } from "./lib/dom";
 import { writable } from "./lib/reactive";
 
 export const AppComponent = createComponent({
@@ -11,7 +11,12 @@ export const AppComponent = createComponent({
     );
 
     const isOpen = writable(true);
-    const toggle = () => (isOpen.value = !isOpen.value);
+    const numbers = writable<number[]>([]);
+
+    const action = () => {
+      isOpen.value = !isOpen.value;
+      numbers.value = numbers.value.concat([numbers.value.length + 1]);
+    };
 
     // component template
     return el("main")(
@@ -20,6 +25,11 @@ export const AppComponent = createComponent({
 
       // subcomponent
       CalcComponent(),
+
+      el("button").on("click", action)("do something"),
+
+      // for block
+      el("pre")(forBlock(numbers, (value) => `value: ${value}\n`)),
 
       // await block
       el("p")(
@@ -38,7 +48,6 @@ export const AppComponent = createComponent({
       ),
 
       el("div")(
-        el("button").on("click", toggle)("toggle"),
         // conditional block:
         ifBlock(isOpen, () => "is open")
       )

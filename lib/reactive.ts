@@ -36,19 +36,21 @@ export function reactive<T>(init: InitHook<T>): Reactive<T> {
 }
 
 export function of<T = any>(source: Reactive<T> | T): Reactive<T> {
-  if (typeof source === "object" && source && "subscribe" in source)
-    return source;
+  if (isReactive(source)) return source;
   return reactive<T>((push) => {
     push(source);
   });
 }
 
+function noop(..._args: any[]) {}
+
 export function writable<T = any>(value: T): Writable<T> {
-  let push = (_v: T) => {};
+  let push = noop;
 
   const { subscribe } = reactive<T>((_push) => {
     push = _push;
     push(value);
+    return () => (push = noop);
   });
 
   return {
@@ -109,4 +111,8 @@ export function derived<T, U>(
     const source = $ instanceof Array ? combine(...$) : of($);
     return source.subscribe((value) => push(predicate(value)));
   });
+}
+
+export function isReactive(value: any): value is Reactive<any> {
+  return typeof value === "object" && value && "subscribe" in value;
 }
