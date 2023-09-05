@@ -286,16 +286,77 @@ export function comment(data: string) {
   return document.createComment(data);
 }
 
+function replaceNode(node: Node, newNode: Node) {
+  (node as Element).replaceWith(newNode);
+}
+
+function insertBefore(node: Node, newNode: Node) {
+  node.parentNode!.insertBefore(node, newNode);
+}
+
+function insertAfter(node: Node, newNode: Node) {
+  const next = node.nextSibling;
+  if (next) insertBefore(next, newNode);
+  else node.parentNode!.appendChild(newNode);
+}
+
+function iterator<T>(items: IterableIterator<T>) {
+  let prev: T | undefined = undefined;
+  let iter = items.next();
+
+  return {
+    get value() {
+      return iter.value;
+    },
+    get done() {
+      return iter.done;
+    },
+    get prev() {
+      return prev;
+    },
+    next() {
+      if (iter.done) throw new Error("Iterator is done");
+      prev = iter.value;
+      iter = items.next();
+    },
+  };
+}
+
 function replaceWith(oldValue: Node[], newValue: Node[]) {
   // TODO: avoid moving all nodes
-  const oldNodes = oldValue.concat().reverse();
-  const newNodes = newValue.concat().reverse();
+  const oldNodes = new Set(oldValue.concat().reverse());
+  const newNodes = new Set(newValue.concat().reverse());
 
-  (oldNodes[0] as any).replaceWith(newNodes[0]);
-  for (let i = 1; i < oldNodes.length; i++) (oldNodes[i] as any).remove();
-  for (let i = 1; i < newNodes.length; i++) {
-    const prev = newNodes[i - 1];
-    const current = newNodes[i];
-    prev.parentNode!.insertBefore(current, prev);
+  const oldNode = iterator(oldNodes.values());
+  const newNode = iterator(newNodes.values());
+
+  while (!oldNode.done || !newNode.done) {
+    if (newNode.done) {
+      if (!newNodes.has(oldNode.value)) oldNode.value.remove();
+      oldNode.next();
+      continue;
+    } else if (oldNode.done) {
+      insertBefore(newNode.prev!, newNode.value);
+      continue;
+    } else if (oldNode.value === newNode.value) {
+      // no change
+      oldNode.next();
+      newNode.next();
+      continue;
+    }
+
+    if (!oldNodes.has(newNode.value)) {
+      insertAfter(oldNode.value, newNode.value);
+      newNode.next();
+    } else if (!newNodes.has(oldNode.value)) {
+      replaceNode(oldNode.value, newNode.value);
+      oldNode.next();
+      newNode.next();
+    } else {
+      insertAfter(oldNode.value, newNode.value);
+      oldNodes.delete(newNode.value);
+      oldNode.next();
+      newNode.next();
+    }
   }
 }
