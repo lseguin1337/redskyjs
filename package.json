@@ -1,5 +1,5 @@
 {
-  "name": "@redsky2/common",
+  "name": "redsky2",
   "version": "0.0.1",
   "description": "Welcome to RedSky JS, a declarative approach to building web applications that makes your code clean, easy to read, and incredibly dynamic. Dive right into the details below.",
   "main": "dist/index",
