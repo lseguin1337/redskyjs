@@ -1,16 +1,19 @@
 {
-  "name": "redsky2",
+  "name": "app",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/index",
+  "main": "dist/lib.js",
+  "typings": "dist/index.d.ts",
   "scripts": {
-    "build:esm": "tsc",
-    "build:umd": "webpack",
-    "build": "npm run build:umd && npm run build:esm",
+    "build": "webpack",
+    "dev": "webpack serve",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
+  "dependencies": {
+    "redsky2": "file:.."
+  },
   "devDependencies": {
     "ts-loader": "9.4.4",
     "typescript": "5.2.2",

@@ -1,6 +1,4 @@
-import { createComponent } from "./lib/component";
-import { el, text } from "./lib/dom";
-import { derived, writable } from "./lib/reactive";
+import { createComponent, el, text, derived, writable } from "redsky2";
 
 export const CalcComponent = createComponent({
   style: [

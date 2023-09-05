@@ -1,7 +1,15 @@
+import {
+  createComponent,
+  awaitBlock,
+  ifBlock,
+  el,
+  switchBlock,
+  forBlock,
+  derived,
+  writable,
+} from "redsky2";
+
 import { CalcComponent } from "./CalcComponent";
-import { createComponent } from "./lib/component";
-import { awaitBlock, ifBlock, el, switchBlock, forBlock } from "./lib/dom";
-import { derived, writable } from "./lib/reactive";
 
 export const AppComponent = createComponent({
   style: ["main { margin: 0; padding: 0; }"],
@@ -40,7 +48,6 @@ export const AppComponent = createComponent({
       // h1 title
       el("h1")("Calc App"),
 
-      // subcomponent
       CalcComponent(),
 
       el("button").on("click", action)("do something"),
@@ -52,8 +59,8 @@ export const AppComponent = createComponent({
       el("p")(
         awaitBlock(promise)
           .pending(() => "loading...")
-          .then((value) => `result: ${value}`)
-          .catch((error) => `error: ${error.message}`)
+          .then((value: string) => `result: ${value}`)
+          .catch((error: Error) => `error: ${error.message}`)
       ),
 
       el("input").attr({ type: "number" }).bind(selectedListInput),
@@ -71,7 +78,11 @@ export const AppComponent = createComponent({
 
       el("div")(
         // conditional block:
-        ifBlock(isOpen, () => "flag open")
+        ifBlock(
+          isOpen,
+          () => "if active",
+          () => "else active"
+        )
       )
     );
   },

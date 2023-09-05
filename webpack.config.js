@@ -2,12 +2,17 @@ const path = require('path');
 
 module.exports = {
   mode: 'production',
-  entry: './main.ts',
+  entry: './lib/index.ts',
   module: {
     rules: [
       {
         test: /\.tsx?$/,
-        use: 'ts-loader',
+        use: [{
+          loader: 'ts-loader',
+          options: {
+            configFile: path.join(__dirname, "./tsconfig.umd.json")
+          },
+        }],
         exclude: /node_modules/,
       },
     ],
@@ -15,15 +20,12 @@ module.exports = {
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
   },
-  devServer: {
-    static: {
-      directory: path.join(__dirname, '.'),
-    },
-    compress: true,
-    port: 9000,
-  },
   output: {
-    filename: 'bundle.js',
+    filename: 'lib.umd.js',
     path: path.resolve(__dirname, 'dist'),
+    library: {
+      name: 'rds',
+      type: 'umd'
+    },
   },
 };

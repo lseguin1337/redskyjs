@@ -1,7 +1,7 @@
 import { getCurrentContext } from "./context";
 import { of, reactive } from "./reactive";
 
-export function useEmitter<T = any>(eventName: string) {
+export function useEventEmitter<T = any>(eventName: string) {
   const ctx = getCurrentContext();
   return (detail: T) => {
     ctx.params.on?.[eventName]?.(detail);

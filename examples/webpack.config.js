@@ -2,7 +2,7 @@ const path = require('path');
 
 module.exports = {
   mode: 'production',
-  entry: './lib/index.ts',
+  entry: './main.ts',
   module: {
     rules: [
       {
@@ -15,12 +15,15 @@ module.exports = {
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
   },
-  output: {
-    filename: 'lib.js',
-    path: path.resolve(__dirname, 'dist'),
-    library: {
-      name: 'rds',
-      type: 'umd'
+  devServer: {
+    static: {
+      directory: path.join(__dirname, '.'),
     },
+    compress: true,
+    port: 9000,
+  },
+  output: {
+    filename: 'bundle.js',
+    path: path.resolve(__dirname, 'dist'),
   },
 };
