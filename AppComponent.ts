@@ -22,6 +22,10 @@ export const AppComponent = createComponent({
       letter.value = letters[numbers.value.length % letters.length] as any;
     };
 
+    const clickOnAAA = () => {
+      alert("Click on AAA");
+    };
+
     // component template
     return el("main")(
       // h1 title
@@ -44,11 +48,11 @@ export const AppComponent = createComponent({
       ),
 
       // switch case block
-      el("p")(
+      el("div")(
         switchBlock(letter)
-          .case("a", () => "first letter of the alphabet")
-          .case("b", () => "first letter of hello in french")
-          .case("c", () => "third letter of the alphabet")
+          .case("a", () => el("span").on("click", clickOnAAA)("aaa"))
+          .case("b", () => el("p")("bbb"))
+          .case("c", () => "ccc")
           .default(() => "not implemented yet")
       ),
 

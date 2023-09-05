@@ -8,6 +8,7 @@ import {
 import { onDestroy } from "./hook";
 import {
   Reactive,
+  ReactiveOrNot,
   Writable,
   derived,
   isReactive,
@@ -15,8 +16,7 @@ import {
   reactive,
 } from "./reactive";
 
-type ReactiveOrNot<T> = Reactive<T> | T;
-type OneOrMany<T> = T | T[];
+type OneOrMany<T> = T[] | T;
 type FactoryOrNot<T> = (() => T) | T;
 type ElChild = FactoryOrNot<ReactiveOrNot<OneOrMany<NNode>>>;
 
@@ -26,13 +26,13 @@ export function toNode(value: NNode) {
 }
 
 export function ifBlock(
-  condition: Reactive<boolean>,
+  condition: ReactiveOrNot<any>,
   block: () => NNode,
   elseBlock: () => NNode = () => comment("if block")
 ) {
   const { wrap } = contextManager();
   const conditionBlock = derived(
-    condition,
+    of(condition),
     wrap((isActive) => {
       if (isActive) return block();
       return elseBlock();

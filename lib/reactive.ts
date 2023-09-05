@@ -2,6 +2,7 @@ export type Reactive<T> = {
   readonly value: T;
   subscribe: (fn: (v: T) => void) => () => void;
 };
+export type ReactiveOrNot<T> = Reactive<T> | T;
 export type Writable<T> = Omit<Reactive<T>, "value"> & { value: T };
 
 type DestroyHook = (() => void) | void;
@@ -35,7 +36,7 @@ export function reactive<T>(init: InitHook<T>): Reactive<T> {
   };
 }
 
-export function of<T = any>(source: Reactive<T> | T): Reactive<T> {
+export function of<T = any>(source: ReactiveOrNot<T>): Reactive<T> {
   if (isReactive(source)) return source;
   return reactive<T>((push) => {
     push(source);
