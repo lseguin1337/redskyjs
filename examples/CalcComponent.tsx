@@ -20,7 +20,6 @@ export const CalcComponent = createComponent({
     const left = writable("0");
     const right = writable("0");
     const result = derived([left, right], ([a, b]) => +a + +b);
-    const isGreaterThan10 = derived(result, (value) => value > 10);
 
     const reset = () => {
       left.value = "0";
@@ -28,17 +27,21 @@ export const CalcComponent = createComponent({
     };
 
     return (
-      <div class={{ isNaN: derived(result, isNaN) }}>
-        <input bind={left}></input>
+      <div class={{ isNaN: result.map(isNaN) }}>
+        <input bind={left} type="number"></input>
         +
-        <input bind={right}></input>
+        <input bind={right} type="number"></input>
         = {result}
         <button onClick={reset}>reset</button>
-        {ifBlock(isGreaterThan10, () => (<div>{ChildComponent({ myValue: result })}</div>))}
+        {ifBlock(result.map((v) => v > 10), () => (
+          <div>{ChildComponent({ myValue: result })}</div>
+        ))}
         <div>
           {switchBlock(result)
             .case(1, () => "woooow")
-            .case(2, () => (<button onClick={() => alert('hello')}>hello</button>))
+            .case(2, () => (
+              <button onClick={() => alert('hello')}>hello</button>
+            ))
             .case(3, () => "Yopi")
             .case(4, () => "toto")
             .case(10, () => "blablabalal")

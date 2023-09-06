@@ -1302,17 +1302,13 @@ declare namespace RedSky {
 
   interface HTMLProps<T> extends AllHTMLAttributes<T>, ClassAttributes<T> {}
 
-  type Writable<T> = {
-    value: T;
-    subscribe: (fn: (v: T) => void) => () => void;
-  };
-
   type Reactive<T> = {
     readonly value: T;
+    map: <U>(fn: (v: T) => U) => Reactive<U>;
     subscribe: (fn: (v: T) => void) => () => void;
   };
-
   type ReactiveOrNot<T> = Reactive<T> | T;
+  type Writable<T> = Omit<Reactive<T>, "value"> & { value: T };
 
   type ReactiveProps<T> = {
     [P in keyof T]: T[P] extends Function

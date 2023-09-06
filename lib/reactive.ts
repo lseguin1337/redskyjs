@@ -1,5 +1,6 @@
 export type Reactive<T> = {
   readonly value: T;
+  map: <U>(fn: (v: T) => U) => Reactive<U>;
   subscribe: (fn: (v: T) => void) => () => void;
 };
 export type ReactiveOrNot<T> = Reactive<T> | T;
@@ -19,21 +20,30 @@ export function reactive<T>(init: InitHook<T>): Reactive<T> {
     for (const handler of handlers) handler(data);
   }
 
-  return {
+  const $ = {
     get value() {
       return lastValue;
     },
-    subscribe(fn: (v: T) => void) {
-      const hook = (v: T) => fn(v);
-      handlers.add(hook);
-      if (handlers.size === 1) destroy = init(emit);
-      else fn(lastValue);
-      return () => {
-        handlers.delete(hook);
-        if (handlers.size === 0) destroy?.();
-      };
-    },
+    map,
+    subscribe,
   };
+
+  function map<U>(mapFn: (v: T) => U): Reactive<U> {
+    return derived($, mapFn);
+  }
+
+  function subscribe(fn: (v: T) => void) {
+    const hook = (v: T) => fn(v);
+    handlers.add(hook);
+    if (handlers.size === 1) destroy = init(emit);
+    else fn(lastValue);
+    return () => {
+      handlers.delete(hook);
+      if (handlers.size === 0) destroy?.();
+    };
+  }
+
+  return $;
 }
 
 export function of<T = any>(source: ReactiveOrNot<T>): Reactive<T> {
@@ -48,13 +58,14 @@ function noop(..._args: any[]) {}
 export function writable<T = any>(value: T): Writable<T> {
   let push = noop;
 
-  const { subscribe } = reactive<T>((_push) => {
+  const { map, subscribe } = reactive<T>((_push) => {
     push = _push;
     push(value);
     return () => (push = noop);
   });
 
   return {
+    map,
     subscribe,
     get value() {
       return value;
@@ -66,7 +77,7 @@ export function writable<T = any>(value: T): Writable<T> {
   };
 }
 
-function combine<T>(...reactives: Reactive<T>[]): Reactive<T[]> {
+export function combine<T>(...reactives: Reactive<T>[]): Reactive<T[]> {
   return reactive((update) => {
     let shouldUpdate = false;
     const tab: T[] = [];
