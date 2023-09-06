@@ -1,12 +1,11 @@
-import { createComponent, derived, writable, ifBlock, switchBlock, h, useProp } from "redsky2";
+import { createComponent, derived, writable, ifBlock, switchBlock, h, Props } from "redsky2";
 
 export const ChildComponent = createComponent({
   style: [
     "span { color: red; }"
   ],
-  setup() {
-    const value = useProp<number>("myValue");
-    return (<span>the value is: {value}</span>);
+  setup({ myValue }: Props<{ myValue: number }>) {
+    return (<span>the value is: {myValue}</span>);
   }
 });
 

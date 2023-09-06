@@ -3,7 +3,7 @@ import { Hook } from "./hook";
 
 export interface VmContext {
   rootNode?: Node & { head?: HTMLHeadElement; body?: HTMLBodyElement };
-  options: ComponentOptions;
+  options: ComponentOptions<any>;
   lifeCycle: {
     destroy: Hook[];
     mount: Hook[];

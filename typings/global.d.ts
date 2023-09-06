@@ -26,9 +26,7 @@ interface Document {}
 interface DataTransfer {}
 interface StyleMedia {}
 
-interface Element {
-  toto: string;
-}
+interface Element {}
 interface DocumentFragment {}
 
 interface HTMLElement extends Element {}

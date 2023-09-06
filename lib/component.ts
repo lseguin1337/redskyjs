@@ -3,13 +3,22 @@
 import { ReactElement } from "../typings/index";
 import { VmContext, createContext, getCurrentContext } from "./context";
 import { el, toNode } from "./dom";
+import { Reactive, ReactiveOrNot, of } from "./reactive";
 
 export type NNode = Node | string | VmContext | ReactElement;
 
-export interface ComponentOptions {
+export type Props<T> = {
+  [P in keyof T]: Reactive<T[P]>;
+};
+
+export type PropsInput<T> = {
+  [P in keyof T]: ReactiveOrNot<T[P]>;
+};
+
+export interface ComponentOptions<T extends {}> {
   styleScopeId?: string;
   style?: string[] | string;
-  setup: () => NNode;
+  setup: (props: Props<T>) => NNode;
 }
 
 function hash(style: string) {
@@ -43,7 +52,7 @@ export function getScopeSelector(id: string) {
   return `[component-${id}]`;
 }
 
-function compileStyle(options: ComponentOptions) {
+function compileStyle(options: ComponentOptions<any>) {
   if (options.styleScopeId) return;
   const cssRules = (options.style as string[]) || [];
   const id = hash(cssRules.join(""));
@@ -76,19 +85,25 @@ function installStyle() {
   destNode.appendChild(el("style")(cssText));
 }
 
-export function createComponent(options: ComponentOptions) {
+function toProps<T extends {}>(inputs?: PropsInput<T>): Props<T> {
+  const props = {} as any;
+  for (const key in inputs) props[key] = of(inputs[key]);
+  return props;
+}
+
+export function createComponent<T extends {}>(options: ComponentOptions<T>) {
   compileStyle(options);
-  return (props = {}, opts: { target?: HTMLElement } = {}) => {
+  return (props?: PropsInput<T>, opts: { target?: HTMLElement } = {}) => {
     return createContext((ctx) => {
       ctx.rootNode = opts.target?.getRootNode();
       ctx.options = options;
-      ctx.params = { props, on: {} };
+      ctx.params = { props: props || {}, on: {} };
       ctx.on = (name: string, handler: (data: any) => void) => {
         ctx.params!.on[name] = handler;
         return ctx as VmContext;
       };
       installStyle();
-      ctx.el = toNode(options.setup());
+      ctx.el = toNode(options.setup(toProps(props)));
       ctx.$mount!();
       if (opts.target) {
         opts.target.append(ctx.el!);
