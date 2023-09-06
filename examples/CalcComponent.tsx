@@ -4,7 +4,7 @@ export const ChildComponent = createComponent({
   style: [
     "span { color: red; }"
   ],
-  setup({ myValue }: Props<{ myValue: number }>) {
+  setup({ myValue }: Props<{ myValue: number, toto?: number }>) {
     return (<span>the value is: {myValue}</span>);
   }
 });
