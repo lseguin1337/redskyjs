@@ -10,6 +10,7 @@ import {
   Reactive,
   ReactiveOrNot,
   Writable,
+  combine,
   derived,
   isReactive,
   of,
@@ -34,22 +35,31 @@ export function ifBlock(
   elseBlock: () => NNode = () => comment("if block")
 ) {
   const { wrap } = contextManager();
-  const conditionBlock = derived(
-    of(condition),
-    wrap((isActive) => {
-      if (isActive) return block();
-      return elseBlock();
-    })
-  );
+  const conditions: { condition: Reactive<any>; template: () => NNode }[] = [
+    { condition: of(condition), template: wrap(block) },
+  ];
+
+  const conditionBlock = reactive<NNode>((push) => {
+    let prevBlock = -2;
+    return combine(...conditions.map(({ condition }) => condition)).subscribe(
+      (res) => {
+        const index = res.findIndex((v) => v);
+        if (prevBlock === index) return;
+        prevBlock = index;
+        if (index === -1) push(elseBlock());
+        else push(conditions[index].template());
+      }
+    );
+  });
 
   return {
     ...conditionBlock,
-    elseIf(elseIfCondition: Reactive<boolean>, elseIfTemplate: () => NNode) {
-      // TODO: implement elseIf
+    elseIf(condition: Reactive<any>, block: () => NNode) {
+      conditions.push({ condition, template: wrap(block) });
       return this;
     },
     else(elseTemplate: () => NNode) {
-      elseBlock = elseTemplate;
+      elseBlock = wrap(elseTemplate);
       return this;
     },
   };

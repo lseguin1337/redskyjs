@@ -33,6 +33,7 @@ export function createContext<T>(init: (context: Partial<VmContext>) => T): T {
         mount: [],
         destroy: [],
       },
+      options: currentContext?.options,
       providers: {},
       parent: currentContext,
       $destroy() {
