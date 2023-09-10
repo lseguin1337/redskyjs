@@ -295,7 +295,7 @@ export function text(text: ReactiveOrNot<string | number>) {
   return textNode;
 }
 
-export function comment(data: string) {
+export function comment(data: string = "placeholder") {
   return document.createComment(data);
 }
 

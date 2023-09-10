@@ -1,11 +1,21 @@
-import { createComponent, derived, writable, ifBlock, switchBlock, h, Props } from "redsky2";
+import { createComponent, derived, writable, ifBlock, switchBlock, dynComponent, h, Props } from "redsky2";
 
 export const ChildComponent = createComponent({
   style: [
     "span { color: red; }"
   ],
-  setup({ myValue }: Props<{ myValue: number, toto?: number }>) {
-    return (<span>the value is: {myValue}</span>);
+  setup({ myValue }: Props<{ myValue: number }>) {
+    const handler = () => alert('current value is ' + myValue.value);
+    return (<span onClick={handler}>the value is: {myValue}</span>);
+  }
+});
+
+export const ChildComponent2 = createComponent({
+  style: [
+    "span { color: blue; }"
+  ],
+  setup({ myValue }: Props<{ myValue: number }>) {
+    return (<span>Second component version displaying value: {myValue}</span>);
   }
 });
 
@@ -25,6 +35,12 @@ export const CalcComponent = createComponent({
       right.value = "0";
     };
 
+    const component = writable(ChildComponent);
+
+    const toggleComponent = () => {
+      component.value = component.value === ChildComponent ? ChildComponent2 : ChildComponent;
+    };
+
     return (
       <div class={{ isNaN: result.map(isNaN) }}>
         <input bind={left} type="number"></input>
@@ -35,11 +51,12 @@ export const CalcComponent = createComponent({
         {ifBlock(result.map((v) => v > 10), () => (
           <div>{ChildComponent({ myValue: result })}</div>
         ))}
+        {dynComponent(component)({ myValue: result })}
         <div>
           {switchBlock(result)
             .case(1, () => "woooow")
             .case(2, () => (
-              <button onClick={() => alert('hello')}>hello</button>
+              <button onClick={toggleComponent}>toggle dyn component</button>
             ))
             .case(3, () => "Yopi")
             .case(4, () => "toto")

@@ -1,8 +1,13 @@
 /// <reference path="../typings/index.d.ts" />
 
 import { ReactElement } from "../typings/index";
-import { VmContext, createContext, getCurrentContext } from "./context";
-import { el, toNode } from "./dom";
+import {
+  VmContext,
+  contextManager,
+  createContext,
+  getCurrentContext,
+} from "./context";
+import { comment, el, toNode } from "./dom";
 import { Reactive, ReactiveOrNot, of } from "./reactive";
 
 export type NNode = Node | string | VmContext | ReactElement;
@@ -110,5 +115,19 @@ export function createComponent<T extends {}>(options: ComponentOptions<T>) {
       }
       return ctx as VmContext;
     });
+  };
+}
+
+export type ComponentType<T> = (props: PropsInput<T>) => VmContext;
+
+export function dynComponent<T>(
+  component: Reactive<ComponentType<T>>
+): (Props: PropsInput<T>) => Reactive<NNode> {
+  const { wrap } = contextManager();
+  const wrappedComponent = component.map((fn) =>
+    typeof fn === "function" ? wrap(fn) : () => comment()
+  );
+  return (props: PropsInput<T>) => {
+    return wrappedComponent.map((fn) => fn(props));
   };
 }
