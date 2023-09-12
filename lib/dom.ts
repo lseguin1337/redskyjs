@@ -1,10 +1,5 @@
 import { NNode } from "./component";
-import {
-  VmContext,
-  contextManager,
-  createContext,
-  getCurrentContext,
-} from "./context";
+import { VmContext, contextManager, getCurrentContext } from "./context";
 import { onDestroy } from "./hook";
 import {
   Reactive,
@@ -428,8 +423,8 @@ export function h(
       element.plug(value);
       continue;
     }
-    const isListener = /^on/.test(name) && typeof value === "function";
-    if (isListener) element.on(name.replace(/^on/, "").toLowerCase(), value);
+    const isListener = /^on[A-Z]/.test(name) && typeof value === "function";
+    if (isListener) element.on(name.substring(2).toLowerCase(), value);
     else element.attr({ [name]: value });
   }
 
