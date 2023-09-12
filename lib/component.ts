@@ -3,9 +3,9 @@
 import { ReactElement } from "../typings/index";
 import {
   VmContext,
-  contextManager,
   createContext,
   getCurrentContext,
+  singleContextManager,
 } from "./context";
 import { comment, el, toNode } from "./dom";
 import { Reactive, ReactiveOrNot, of } from "./reactive";
@@ -123,9 +123,9 @@ export type ComponentType<T> = (props: PropsInput<T>) => VmContext;
 export function dynComponent<T>(
   component: Reactive<ComponentType<T>>
 ): (Props: PropsInput<T>) => Reactive<NNode> {
-  const { wrap } = contextManager();
+  const { scope } = singleContextManager();
   const wrappedComponent = component.map((fn) =>
-    typeof fn === "function" ? wrap(fn) : () => comment()
+    typeof fn === "function" ? scope(fn) : () => comment()
   );
   return (props: PropsInput<T>) => {
     return wrappedComponent.map((fn) => fn(props));

@@ -56,11 +56,11 @@ export function createContext<T>(init: (context: Partial<VmContext>) => T): T {
   }
 }
 
-export function contextManager() {
+export function singleContextManager() {
   const oldCtx = getCurrentContext();
   let prevCtx: Partial<VmContext> | null = null;
 
-  function wrap<T extends (...args: any[]) => any>(fn: T): T {
+  function scope<T extends (...args: any[]) => any>(fn: T): T {
     return ((...args) => create(() => fn(...args))) as T;
   }
 
@@ -78,6 +78,15 @@ export function contextManager() {
     }
   }
 
+  return {
+    scope,
+    create,
+  };
+}
+
+export function manyContextManager() {
+  const oldCtx = getCurrentContext();
+
   function createChild<T>(fn: (newCtx: Partial<VmContext>) => T) {
     const tmp = currentContext;
     try {
@@ -89,8 +98,6 @@ export function contextManager() {
   }
 
   return {
-    wrap,
-    create,
     createChild,
   };
 }

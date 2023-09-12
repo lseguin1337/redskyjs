@@ -1,5 +1,10 @@
 import { NNode } from "./component";
-import { VmContext, contextManager, getCurrentContext } from "./context";
+import {
+  VmContext,
+  singleContextManager,
+  manyContextManager,
+  getCurrentContext,
+} from "./context";
 import { onDestroy } from "./hook";
 import {
   Reactive,
@@ -29,9 +34,9 @@ export function ifBlock(
   block: () => NNode,
   elseBlock: () => NNode = () => comment("if block")
 ) {
-  const { wrap } = contextManager();
+  const { scope } = singleContextManager();
   const conditions: { condition: Reactive<any>; template: () => NNode }[] = [
-    { condition: of(condition), template: wrap(block) },
+    { condition: of(condition), template: scope(block) },
   ];
 
   const conditionBlock = reactive<NNode>((push) => {
@@ -50,11 +55,11 @@ export function ifBlock(
   return {
     ...conditionBlock,
     elseIf(condition: Reactive<any>, block: () => NNode) {
-      conditions.push({ condition, template: wrap(block) });
+      conditions.push({ condition, template: scope(block) });
       return this;
     },
     else(elseTemplate: () => NNode) {
-      elseBlock = wrap(elseTemplate);
+      elseBlock = scope(elseTemplate);
       return this;
     },
   };
@@ -83,7 +88,7 @@ export function forBlock<T>(
     typeof resolveKey === "string"
       ? (item: T) => item[resolveKey]
       : (resolveKey as KeyResolver<T>);
-  const { createChild } = contextManager();
+  const { createChild } = manyContextManager();
   const block = reactive<NNode[]>((push) => {
     const nodes = new Map<any, { node: Node; vm: VmContext }>();
     return of(list).subscribe((items) => {
@@ -121,13 +126,13 @@ export function forBlock<T>(
 }
 
 export function switchBlock<T>($: ReactiveOrNot<T>) {
-  const { wrap } = contextManager();
+  const { scope } = singleContextManager();
   let defaultFn: ((value: T) => NNode) | undefined;
   const cases = new Map<T, (value: T) => NNode>();
 
   const reactiveTemplate = reactive<NNode>((push) => {
     return of($).subscribe(
-      wrap((value) => {
+      scope((value) => {
         const template = cases.get(value) || defaultFn;
         if (template) return push(template(value));
         return push(comment("switch case missing"));
@@ -149,7 +154,7 @@ export function switchBlock<T>($: ReactiveOrNot<T>) {
 }
 
 export function awaitBlock<T>($: ReactiveOrNot<Promise<T>>) {
-  const { wrap } = contextManager();
+  const { scope } = singleContextManager();
   const noop = () => comment("text");
   const templates = {
     pending: noop as () => NNode,
@@ -184,15 +189,15 @@ export function awaitBlock<T>($: ReactiveOrNot<Promise<T>>) {
   return {
     ...template,
     then(fn: (value: T) => NNode) {
-      templates.then = wrap(fn);
+      templates.then = scope(fn);
       return this;
     },
     catch(fn: (err: Error) => NNode) {
-      templates.catch = wrap(fn);
+      templates.catch = scope(fn);
       return this;
     },
     pending(fn: () => NNode) {
-      templates.pending = wrap(fn);
+      templates.pending = scope(fn);
       return this;
     },
   };
