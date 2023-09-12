@@ -1,4 +1,4 @@
-import { createComponent, derived, writable, ifBlock, switchBlock, dynComponent, h, Props } from "redsky2";
+import { createComponent, derived, writable, ifBlock, switchBlock, dynComponent, h, Props, forBlock } from "redsky2";
 
 export const ChildComponent = createComponent({
   style: [
@@ -35,6 +35,9 @@ export const CalcComponent = createComponent({
       right.value = "0";
     };
 
+    const list = writable([{id:1},{id:2},{id:3},{id:4},{id:5}]);
+    console.log({list});
+
     const component = writable(ChildComponent);
 
     const toggleComponent = () => {
@@ -48,6 +51,9 @@ export const CalcComponent = createComponent({
         <input bind={right} type="number"></input>
         = {result}
         <button onClick={reset}>reset</button>
+        {forBlock(list, (item) => {
+          return (<div>{item.id}</div>);
+        }, 'id')}
         {ifBlock(result.map((v) => v > 10), () => (
           <div>{ChildComponent({ myValue: result })}</div>
         ))}

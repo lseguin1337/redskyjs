@@ -78,9 +78,20 @@ export function contextManager() {
     }
   }
 
+  function createChild<T>(fn: (newCtx: Partial<VmContext>) => T) {
+    const tmp = currentContext;
+    try {
+      currentContext = oldCtx;
+      return createContext(fn);
+    } finally {
+      currentContext = tmp;
+    }
+  }
+
   return {
     wrap,
     create,
+    createChild,
   };
 }
 

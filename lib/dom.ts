@@ -65,22 +65,41 @@ export function ifBlock(
   };
 }
 
+function defaultKeyResolver<T>() {
+  const keys: { item: T; key: string }[] = [];
+  let counter = 0;
+
+  return (item: T, index: number, items: T[]) => {
+    if (items.length < keys.length) keys.splice(items.length);
+    if (!(index in keys) || keys[index].item !== item)
+      keys[index] = { item, key: `${counter++}` };
+    return keys[index].key;
+  };
+}
+
+type KeyResolver<T> = (item: T, index: number, items: T[]) => any;
+
 export function forBlock<T>(
   list: ReactiveOrNot<T[]>,
   template: (item: T, index: number, items: T[]) => NNode,
-  resolveKey: (item: T, index: number) => any = (_item, index) => index
+  resolveKey: KeyResolver<T> | keyof T = defaultKeyResolver()
 ) {
+  const getKey =
+    typeof resolveKey === "string"
+      ? (item: T) => item[resolveKey]
+      : (resolveKey as KeyResolver<T>);
+  const { createChild } = contextManager();
   const block = reactive<NNode[]>((push) => {
     const nodes = new Map<any, { node: Node; vm: VmContext }>();
     return of(list).subscribe((items) => {
       const usedKeys = new Set<any>();
 
       const compiledNodes = items.map((item, index) => {
-        const key = resolveKey(item, index);
+        const key = getKey(item, index, items);
         usedKeys.add(key);
         const cache = nodes.get(key);
         if (cache) return cache.node;
-        return createContext((vm) => {
+        return createChild((vm) => {
           const node = toNode(template(item, index, items));
           nodes.set(key, { node, vm: vm as VmContext });
           return node;
@@ -190,11 +209,22 @@ function react<T>(
 ) {
   let oldValue: T | undefined = undefined;
   const fn = (newValue: T) => {
+    if (newValue === oldValue) return;
     render(newValue, oldValue);
     oldValue = newValue;
   };
   if (isReactive(readable)) return onDestroy(readable.subscribe(fn));
   fn(readable);
+}
+
+function memo<T extends Function>(fn: T): T {
+  let param: any = undefined;
+  let result: any = undefined;
+  return ((...args: any[]) => {
+    if (param === args[0]) return result;
+    param = args[0];
+    return (result = fn.apply(null, args));
+  }) as any;
 }
 
 export function el(localName: string) {
@@ -209,20 +239,22 @@ export function el(localName: string) {
       const reactiveChild = of(
         typeof childComponent === "function" ? childComponent() : childComponent
       );
-      const childNodes = derived(reactiveChild, (value) => {
-        if (value instanceof Array) {
-          if (value.length === 0) return [comment("empty list")];
-          return value.map(toNode);
-        }
-        return [toNode(value)];
-      });
+      const childNodes = derived(
+        reactiveChild,
+        memo((value) => {
+          if (value instanceof Array) {
+            if (value.length === 0) return [comment("empty list")];
+            return value.map(toNode);
+          }
+          return [toNode(value)];
+        })
+      );
       react(childNodes, (nodes, prevNodes) => {
         if (prevNodes) {
           replaceWith(prevNodes, nodes);
         } else {
           node.append(...nodes);
         }
-        prevNodes = nodes;
       });
     }
     return node;
