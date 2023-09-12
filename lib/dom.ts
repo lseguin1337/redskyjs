@@ -217,13 +217,13 @@ function react<T>(
   fn(readable);
 }
 
-function memo<T extends Function>(fn: T): T {
+export function memo<T extends (p: any) => any>(fn: T): T {
   let param: any = undefined;
   let result: any = undefined;
-  return ((...args: any[]) => {
-    if (param === args[0]) return result;
-    param = args[0];
-    return (result = fn.apply(null, args));
+  return ((p: any) => {
+    if (param === p) return result;
+    param = p;
+    return (result = fn.call(null, p));
   }) as any;
 }
 

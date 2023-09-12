@@ -7,7 +7,7 @@ import {
   getCurrentContext,
   singleContextManager,
 } from "./context";
-import { comment, el, toNode } from "./dom";
+import { comment, el, memo, toNode } from "./dom";
 import { Reactive, ReactiveOrNot, of } from "./reactive";
 
 export type NNode = Node | string | VmContext | ReactElement;
@@ -124,10 +124,10 @@ export function dynComponent<T>(
   component: Reactive<ComponentType<T>>
 ): (Props: PropsInput<T>) => Reactive<NNode> {
   const { scope } = singleContextManager();
-  const wrappedComponent = component.map((fn) =>
-    typeof fn === "function" ? scope(fn) : () => comment()
+  const wrappedComponent = component.map(
+    memo((fn) => (typeof fn === "function" ? scope(fn) : () => comment()))
   );
   return (props: PropsInput<T>) => {
-    return wrappedComponent.map((fn) => fn(props));
+    return wrappedComponent.map(memo((fn) => fn(props)));
   };
 }
