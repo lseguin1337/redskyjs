@@ -38,11 +38,7 @@ export const CalcComponent = createComponent({
     const list = writable([{id:1},{id:2},{id:3},{id:4},{id:5}]);
     console.log({list});
 
-    const component = writable(ChildComponent);
-
-    const toggleComponent = () => {
-      component.value = component.value === ChildComponent ? ChildComponent2 : ChildComponent;
-    };
+    const component = result.map((v) => v > 15 ? ChildComponent : ChildComponent2);
 
     return (
       <div class={{ isNaN: result.map(isNaN) }}>
@@ -62,7 +58,7 @@ export const CalcComponent = createComponent({
           {switchBlock(result)
             .case(1, () => "woooow")
             .case(2, () => (
-              <button onClick={toggleComponent}>toggle dyn component</button>
+              <button>toggle dyn component</button>
             ))
             .case(3, () => "Yopi")
             .case(4, () => "toto")
