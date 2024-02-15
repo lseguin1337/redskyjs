@@ -1,6 +1,6 @@
 /// <reference path="../typings/index.d.ts" />
 
-import { ReactElement } from "../typings/index";
+import { ClassType, ReactElement } from "../typings/index";
 import {
   VmContext,
   createContext,
@@ -21,6 +21,8 @@ export type PropsInput<T> = {
 };
 
 export interface ComponentOptions<T extends {}> {
+  name?: string; 
+  shadowMode?: boolean;
   styleScopeId?: string;
   style?: string[] | string;
   setup: (props: Props<T>) => NNode;
@@ -96,9 +98,51 @@ function toProps<T extends {}>(inputs?: PropsInput<T>): Props<T> {
   return props;
 }
 
+function lifeCycleManager(el: HTMLElement & { keepAlive?: boolean, $mount: () => void, $destroy: () => void }) {
+  let timer: any = null;
+  let mounted = false;
+
+  return {
+    connect() {
+      if (mounted) {
+        clearTimeout(timer);
+        timer = null;
+      } else {
+        mounted = true;
+        el.$mount();
+      }
+    },
+    disconnect() {
+      if (el.keepAlive) return;
+      timer = setTimeout(() => el.$destroy(), 20);
+    },
+  };
+}
+
+/**
+ * WebElement life cycle
+ */
+function LifeCycle() {
+  const instances = new WeakMap();
+  const resolveManager = (instance: any) => {
+    if (!instances.has(instance))
+      instances.set(instance, lifeCycleManager(instance));
+    return instances.get(instance);
+  };
+  return (cls: any, _: any) => {
+    cls.prototype.connectedCallback = function () {
+      resolveManager(this).connect();
+    };
+    cls.prototype.disconnectedCallback = function () {
+      resolveManager(this).disconnect();
+    };
+  };
+}
+
 export function createComponent<T extends {}>(options: ComponentOptions<T>) {
   compileStyle(options);
-  return (props?: PropsInput<T>, opts: { target?: HTMLElement } = {}) => {
+
+  function component(props?: PropsInput<T>, opts: { target?: HTMLElement | ShadowRoot } = {}) {
     return createContext((ctx) => {
       ctx.rootNode = opts.target?.getRootNode();
       ctx.options = options;
@@ -116,6 +160,33 @@ export function createComponent<T extends {}>(options: ComponentOptions<T>) {
       return ctx as VmContext;
     });
   };
+
+  component.toElement = (opts: { shadowMode?: boolean, name?: string } = {}) => {
+    @LifeCycle()
+    class Element extends HTMLElement {
+      vm?: VmContext;
+      props?: PropsInput<T>;
+
+      $mount() {
+        // TODO: handle propety and attribute binding
+        this.vm = component(this.props, { target: opts.shadowMode === false ? this : this.attachShadow({ mode: 'open' }) });
+      }
+
+      $destroy() {
+        this.vm?.$destroy();
+      }
+    };
+
+    if (opts.name)
+      customElements.define(opts.name, Element);
+    return Element;
+  }
+
+  if (options.name) {
+    component.toElement(options);
+  }
+
+  return component;
 }
 
 export type ComponentType<T> = (props: PropsInput<T>) => VmContext;
