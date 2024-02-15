@@ -19,7 +19,8 @@ export const ChildComponent2 = createComponent({
   }
 });
 
-export const CalcComponent = createComponent({
+createComponent({
+  name: 'calc-app',
   style: [
     "div { display: flex; padding: 5px; color: #fff; }",
     "div.isNaN { background-color: red; }",
